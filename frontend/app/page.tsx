@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import ThemeToggle from '@/components/ThemeToggle';
 import Navbar from '@/components/Navbar';
+import { Eye } from 'lucide-react';
 
 interface Paper {
   _id: string;
@@ -67,7 +68,7 @@ export default function HomePage() {
             <Link href="/search" className="hero-adv">Advanced search options →</Link>
 
             {/* SWARNSPACE BANNER */}
-            <div className="swarnspace-banner" style={{ marginTop: '2.5rem' }}>
+            <div className="swarnspace-banner" style={{ marginTop: '0.5rem' }}>
               <div className="swarnspace-banner-left">
                 <div className="swarnspace-kicker"><div className="swarnspace-kicker-dot"></div>SwarnSpace</div>
                 <h2>{cmsConfig.heroHeadline || 'Advancing Knowledge Through Open Research'}</h2>
@@ -101,31 +102,61 @@ export default function HomePage() {
               <h2 className="section-title">Featured Papers</h2>
               <Link href="/browse" className="view-all">View all →</Link>
             </div>
-            <div className="papers-grid">
+            <div className="papers-list">
               {cmsConfig.featuredPaperIds?.length > 0 ? cmsConfig.featuredPaperIds.map((paper: any) => (
-                <div className="paper-card" key={paper._id}>
-                  <span className="paper-tag">{paper.subject?.name || 'General'}</span>
-                  <div className="paper-title">{paper.title}</div>
-                  <div className="paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
-                  <div className="paper-abstract">{paper.abstract}</div>
-                  <div className="paper-footer">
-                    <div className="paper-meta"><span>👁 {paper.views || 0}</span><span>⬇ {paper.downloads || 0}</span></div>
-                    <button className="paper-view-btn" onClick={() => router.push(`/paper/${paper.slug}`)}>View</button>
+                <div className="acm-paper-card" key={paper._id} onClick={() => router.push(`/paper/${paper.slug}`)}>
+                  <div className="acm-paper-meta">
+                    <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
+                    <span className="acm-paper-date">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    <span className="acm-paper-status">{paper.status === 'published' ? 'Published' : 'Under Review'}</span>
+                  </div>
+                  <div className="acm-paper-body">
+                    <div className="acm-paper-title">{paper.title}</div>
+                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
+                    <div className="acm-paper-abstract">{paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}</div>
+                    <div className="acm-paper-footer">
+                      <span className="acm-stat">👁 {paper.views || 0} views</span>
+                      <span className="acm-stat">⬇ {paper.downloads || 0} downloads</span>
+                      <div style={{ marginLeft: 'auto' }}>
+                        <Link
+                          href={`/paper/${paper.slug}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="acm-view-btn"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> View
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )) : papers.length > 0 ? papers.map((paper: any) => (
-                <div className="paper-card" key={paper._id}>
-                  <span className="paper-tag">{paper.subject?.name || 'General'}</span>
-                  <div className="paper-title">{paper.title}</div>
-                  <div className="paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
-                  <div className="paper-abstract">{paper.abstract}</div>
-                  <div className="paper-footer">
-                    <div className="paper-meta"><span>👁 {paper.views || 0}</span><span>⬇ {paper.downloads || 0}</span></div>
-                    <button className="paper-view-btn" onClick={() => router.push(`/paper/${paper.slug}`)}>View</button>
+                <div className="acm-paper-card" key={paper._id} onClick={() => router.push(`/paper/${paper.slug}`)}>
+                  <div className="acm-paper-meta">
+                    <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
+                    <span className="acm-paper-date">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    <span className="acm-paper-status">Published</span>
+                  </div>
+                  <div className="acm-paper-body">
+                    <div className="acm-paper-title">{paper.title}</div>
+                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
+                    <div className="acm-paper-abstract">{paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}</div>
+                    <div className="acm-paper-footer">
+                      <span className="acm-stat">👁 {paper.views || 0} views</span>
+                      <span className="acm-stat">⬇ {paper.downloads || 0} downloads</span>
+                      <div style={{ marginLeft: 'auto' }}>
+                        <Link
+                          href={`/paper/${paper.slug}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="acm-view-btn"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> View
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )) : (
-                <div style={{ gridColumn: '1 / -1', textAlign: 'center' }}>No papers found.</div>
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--ink-faint)' }}>No papers found.</div>
               )}
             </div>
           </div>

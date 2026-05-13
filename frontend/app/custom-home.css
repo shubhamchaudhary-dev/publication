@@ -16,7 +16,7 @@
     --banner-border: #c4d8ea;
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'DM Sans', sans-serif;
-    
+
     --nav-bg: #1a3550;
     --nav-border: #243f60;
     --nav-link: #7a9ab8;
@@ -54,7 +54,7 @@
     --banner-bg: #141A21;
     --banner-border: #1F2937;
     --orange: #20C997;
-    
+
     --nav-bg: #1a1a1a;
     --nav-border: #262626;
     --nav-link: #64748B;
@@ -127,25 +127,54 @@
     background: var(--btn-solid-hover);
   }
 
+  /* ── HERO: background image (light/day mode only) ── */
   .swarn-home-override .hero {
-    background: var(--white);
-    padding: 4rem 2.5rem 3rem;
+    position: relative;
+    padding: 5rem 2.5rem 4rem;
     border-bottom: 1px solid var(--border);
+    background-image: url('/images/hero-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
+  /* No overlay, no vignette — pure image */
+  .swarn-home-override .hero::before,
+  .swarn-home-override .hero::after {
+    display: none;
+  }
+
+  /* Dark mode: plain background, no image */
+  .dark .swarn-home-override .hero {
+    background-image: none;
+    background: var(--white);
+  }
+  .dark .swarn-home-override .hero::before,
+  .dark .swarn-home-override .hero::after {
+    display: none;
+  }
+
+
   .swarn-home-override .hero-inner {
+    position: relative;
+    z-index: 1;
     max-width: 900px;
     margin: 0 auto;
   }
 
+  /* Force hero text visible over background image */
   .swarn-home-override .hero-search-label {
     font-size: 13px;
-    font-weight: 500;
-    color: var(--ink-faint);
+    font-weight: 600;
+    color: #1a3550;
     letter-spacing: .08em;
     text-transform: uppercase;
     margin-bottom: .75rem;
   }
+  .dark .swarn-home-override .hero-search-label {
+    color: var(--ink-faint);
+  }
+
 
   .swarn-home-override .hero-search-bar {
     display: flex;
@@ -153,9 +182,22 @@
     border: 1.5px solid var(--teal);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 16px rgba(15, 110, 86, .08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
     max-width: 720px;
     margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.40);
+  }
+
+  /* Dark mode: restore solid search bar */
+  .dark .swarn-home-override .hero-search-bar {
+    background: var(--white);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1.5px solid var(--border);
+    box-shadow: none;
   }
 
   .swarn-home-override .hero-search-bar input {
@@ -165,20 +207,29 @@
     outline: none;
     font-size: 15px;
     font-family: var(--font-sans);
-    background: var(--white);
+    background: transparent;
     color: var(--ink);
   }
 
   .swarn-home-override .hero-search-bar select {
     border: none;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid rgba(0,0,0,0.10);
     outline: none;
     padding: 0 14px;
-    background: var(--sand);
+    background: rgba(245,248,252,0.60);
     font-size: 13.5px;
     color: var(--ink-muted);
     font-family: var(--font-sans);
     cursor: pointer;
+  }
+  .dark .swarn-home-override .hero-search-bar input {
+    background: var(--white);
+    color: var(--ink);
+  }
+  .dark .swarn-home-override .hero-search-bar select {
+    background: var(--sand);
+    border-left: 1px solid var(--border);
+    color: var(--ink-muted);
   }
 
   .swarn-home-override .hero-search-bar button {
@@ -207,16 +258,30 @@
   .swarn-home-override .hero-tag {
     padding: 4px 12px;
     border-radius: 20px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(26, 53, 80, 0.45);
     font-size: 12.5px;
-    color: var(--ink-muted);
+    color: #1a3550;
     cursor: pointer;
     transition: all .2s;
-    background: var(--white);
+    background: rgba(255, 255, 255, 0.55);
     text-decoration: none;
+    font-weight: 500;
   }
 
   .swarn-home-override .hero-tag:hover {
+    border-color: #1a3550;
+    color: #ffffff;
+    background: rgba(26, 53, 80, 0.80);
+  }
+
+  /* Dark mode: restore original pill style */
+  .dark .swarn-home-override .hero-tag {
+    border: 1px solid var(--border);
+    color: var(--ink-muted);
+    background: var(--white);
+  }
+
+  .dark .swarn-home-override .hero-tag:hover {
     border-color: var(--teal);
     color: var(--teal);
     background: var(--teal-light);
@@ -224,14 +289,22 @@
 
   .swarn-home-override .hero-adv {
     font-size: 12.5px;
-    color: var(--teal);
+    color: #1a3550;
     cursor: pointer;
     text-decoration: underline;
+    font-weight: 500;
+  }
+
+  .dark .swarn-home-override .hero-adv {
+    color: var(--teal);
   }
 
   .swarn-home-override .swarnspace-banner {
-    background: var(--banner-bg);
-    border: 1px solid var(--banner-border);
+    background: rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.40);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
     border-radius: 10px;
     padding: 2rem 2.5rem;
     display: flex;
@@ -239,7 +312,16 @@
     justify-content: space-between;
     gap: 2rem;
     max-width: 900px;
-    margin: 0 auto;
+    margin: 1rem auto 0;
+  }
+
+  /* Dark mode: restore solid banner */
+  .dark .swarn-home-override .swarnspace-banner {
+    background: var(--banner-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid var(--banner-border);
+    box-shadow: none;
   }
 
   .swarn-home-override .swarnspace-banner-left {
@@ -434,92 +516,124 @@
     background: var(--white);
   }
 
-  .swarn-home-override .papers-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-  }
-
-  .swarn-home-override .paper-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.4rem;
+  .swarn-home-override .papers-list {
     display: flex;
     flex-direction: column;
-    gap: .75rem;
-    transition: box-shadow .2s, border-color .2s;
+    gap: 1.5rem;
   }
 
-  .swarn-home-override .paper-card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
-    border-color: #c8c8bf;
+  .swarn-home-override .acm-paper-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 2rem;
+    cursor: pointer;
+    transition: box-shadow .2s;
   }
 
-  .swarn-home-override .paper-tag {
-    display: inline-block;
+  .swarn-home-override .acm-paper-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .05);
+  }
+
+  .swarn-home-override .acm-paper-meta {
+    flex: 0 0 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .swarn-home-override .acm-paper-type {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .07em;
-    padding: 3px 9px;
-    border-radius: 20px;
-    background: var(--teal-light);
-    color: var(--teal);
-  }
-
-  .swarn-home-override .paper-title {
-    font-family: var(--font-serif);
-    font-size: 1.02rem;
-    line-height: 1.4;
     color: var(--ink);
-    font-weight: 600;
+    letter-spacing: .05em;
   }
 
-  .swarn-home-override .paper-authors {
-    font-size: 12.5px;
+  .swarn-home-override .acm-paper-date {
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  .swarn-home-override .acm-paper-status {
+    font-size: 11px;
     color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
   }
 
-  .swarn-home-override .paper-abstract {
+  .swarn-home-override .acm-paper-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .swarn-home-override .acm-paper-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.3;
+    color: #0077b5; /* ACM Blue style */
+    font-weight: 500;
+  }
+
+  .swarn-home-override .acm-paper-card:hover .acm-paper-title {
+    text-decoration: underline;
+  }
+
+  .dark .swarn-home-override .acm-paper-title {
+    color: #5ab4e5;
+  }
+
+  .swarn-home-override .acm-paper-authors {
     font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 0.5rem;
+  }
+
+  .swarn-home-override .acm-paper-abstract {
+    font-size: 13.5px;
     color: var(--ink-muted);
     line-height: 1.6;
+    margin-top: 0.75rem;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .swarn-home-override .paper-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: auto;
-  }
-
-  .swarn-home-override .paper-meta {
+  .swarn-home-override .acm-paper-footer {
     display: flex;
     gap: 1rem;
-    font-size: 12px;
-    color: var(--ink-faint);
-  }
-
-  .swarn-home-override .paper-view-btn {
-    padding: 6px 16px;
-    background: var(--teal);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 12.5px;
+    margin-top: 1rem;
+    font-size: 13px;
+    color: var(--teal);
     font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font-sans);
-    transition: background .2s;
   }
 
-  .swarn-home-override .paper-view-btn:hover {
-    background: #0d5c47;
+  .swarn-home-override .acm-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .swarn-home-override .acm-view-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #0077b5;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .swarn-home-override .acm-view-btn:hover {
+    background: #005e8e;
   }
 
   .swarn-home-override .subjects-grid {

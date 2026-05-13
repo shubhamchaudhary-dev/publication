@@ -250,7 +250,7 @@ export default function DashboardPage() {
                         <div>
                             <h2 className="font-serif text-2xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-6">Saved Bookmarks</h2>
                             {bookmarksLoading ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-4">
                                     {[1, 2].map(i => <div key={i} className="h-48 bg-[#F1F5F9] dark:bg-[#1F2937] animate-pulse rounded-lg" />)}
                                 </div>
                             ) : bookmarksData?.data.length === 0 ? (
@@ -258,8 +258,8 @@ export default function DashboardPage() {
                                     <p>You have no saved papers.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    {bookmarksData?.data.map((b) => (
+                                <div className="flex flex-col gap-6">
+                                    {bookmarksData?.data.filter((b) => b.paperId).map((b) => (
                                         <PaperCard key={b.paperId._id} paper={b.paperId} />
                                     ))}
                                 </div>

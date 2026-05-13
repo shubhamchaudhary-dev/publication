@@ -102,7 +102,7 @@ export default function BrowsePage() {
                     </h1>
 
                     {papersLoading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-6">
                             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
                         </div>
                     ) : papers.length === 0 ? (
@@ -112,7 +112,7 @@ export default function BrowsePage() {
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="flex flex-col gap-6">
                                 {papers.map((paper) => (
                                     <PaperCard key={paper._id} paper={paper} />
                                 ))}
