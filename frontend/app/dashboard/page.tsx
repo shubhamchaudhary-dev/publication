@@ -19,6 +19,7 @@ export default function DashboardPage() {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'papers' | 'bookmarks' | 'profile'>('bookmarks');
     const [showSuccess, setShowSuccess] = useState(false);
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     const { register, handleSubmit, reset } = useForm({
         defaultValues: {
@@ -178,6 +179,40 @@ export default function DashboardPage() {
                                                         <strong>Editorial Remark:</strong> {paper.remarks}
                                                     </div>
                                                 )}
+                                                {/* Correction files from CMS — filenames only, click image to open */}
+                                                {paper.correctionFiles && paper.correctionFiles.length > 0 && paper.status !== 'published' && (
+                                                    <div className="mt-3 border border-indigo-200 dark:border-indigo-800 rounded-lg overflow-hidden">
+                                                        <div className="bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5">
+                                                            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                                                                📎 Correction files from Editorial Team ({paper.correctionFiles.length})
+                                                            </span>
+                                                        </div>
+                                                        <ul className="divide-y divide-indigo-100 dark:divide-indigo-900/40">
+                                                            {paper.correctionFiles.map((cf, i) => (
+                                                                <li key={i} className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-[#111827]">
+                                                                    <span className="text-xs text-[#0F172A] dark:text-[#F1F5F9] truncate max-w-[200px]">{cf.name}</span>
+                                                                    {cf.type === 'image' ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setLightboxSrc(cf.data)}
+                                                                            className="ml-2 text-xs font-medium px-2.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 transition-colors shrink-0"
+                                                                        >
+                                                                            👁 View
+                                                                        </button>
+                                                                    ) : (
+                                                                        <a
+                                                                            href={cf.data}
+                                                                            download={cf.name}
+                                                                            className="ml-2 text-xs font-medium px-2.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shrink-0"
+                                                                        >
+                                                                            ↓ Download
+                                                                        </a>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex gap-2 shrink-0 flex-wrap self-start">
                                                 {/* Download original submitted Word file */}
@@ -261,6 +296,35 @@ export default function DashboardPage() {
             </div>
 
             <Footer />
+
+            {/* Lightbox for correction images */}
+            {lightboxSrc && (
+                <div
+                    className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4"
+                    onClick={() => setLightboxSrc(null)}
+                >
+                    <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setLightboxSrc(null)}
+                            className="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300"
+                        >✕</button>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={lightboxSrc}
+                            alt="Correction"
+                            className="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain"
+                        />
+                        <a
+                            href={lightboxSrc}
+                            download="correction-image"
+                            className="mt-3 block text-center text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            ↓ Download Image
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

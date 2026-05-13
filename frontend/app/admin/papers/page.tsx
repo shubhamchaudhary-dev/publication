@@ -19,6 +19,12 @@ export default function AdminPapersPage() {
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [successToast, setSuccessToast] = useState('');
+    // Correction files state (images: up to 5, document: 1)
+    const [correctionFiles, setCorrectionFiles] = useState<File[]>([]);
+    const [correctionUploading, setCorrectionUploading] = useState(false);
+    const [correctionError, setCorrectionError] = useState('');
+    const [correctionSuccess, setCorrectionSuccess] = useState(false);
+    const [correctionMode, setCorrectionMode] = useState<'image' | 'document'>('document');
 
     const showToast = (msg: string) => {
         setSuccessToast(msg);
@@ -28,6 +34,33 @@ export default function AdminPapersPage() {
     const setStatusFilter = (val: string) => {
         if (val === 'all') router.push('/admin/papers');
         else router.push(`/admin/papers?status=${val}`);
+    };
+
+    const handleSendCorrectionFile = async () => {
+        if (!reviewingPaper || correctionFiles.length === 0) return;
+        setCorrectionError('');
+        setCorrectionSuccess(false);
+        setCorrectionUploading(true);
+        try {
+            const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(f);
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+            });
+            const filesPayload = await Promise.all(
+                correctionFiles.map(async (f) => ({ fileBase64: await toBase64(f), fileName: f.name }))
+            );
+            await api.post(`/api/admin/papers/${reviewingPaper._id}/correction-file`, { files: filesPayload });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'papers'] });
+            setCorrectionFiles([]);
+            setCorrectionSuccess(true);
+            showToast(`✅ ${filesPayload.length} correction file(s) sent to author!`);
+        } catch (e: any) {
+            setCorrectionError(e?.response?.data?.message || 'Upload failed');
+        } finally {
+            setCorrectionUploading(false);
+        }
     };
 
     const { data: papersData, isLoading } = useQuery<{ data: Paper[] }>({
@@ -278,10 +311,78 @@ export default function AdminPapersPage() {
                             {uploadError && (
                                 <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">{uploadError}</p>
                             )}
+
+                            {/* Correction File Section — non-published papers only */}
+                            {reviewingPaper.status !== 'published' && (
+                                <div className="border-t border-[#E2E8F0] dark:border-[#374151] pt-4 mt-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9]">
+                                            Send Correction File
+                                            <span className="ml-2 text-xs font-normal text-[#64748B]">(visible to author only)</span>
+                                        </p>
+                                        {/* Image / Document toggle */}
+                                        <div className="flex gap-1 text-xs">
+                                            <button type="button" onClick={() => { setCorrectionMode('image'); setCorrectionFiles([]); }}
+                                                className={`px-2.5 py-1 rounded-l-md border font-medium transition-colors ${ correctionMode === 'image' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-[#1F2937] text-[#64748B] border-[#E2E8F0] dark:border-[#374151]' }`}>
+                                                🖼 Images (max 5)
+                                            </button>
+                                            <button type="button" onClick={() => { setCorrectionMode('document'); setCorrectionFiles([]); }}
+                                                className={`px-2.5 py-1 rounded-r-md border font-medium transition-colors ${ correctionMode === 'document' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-[#1F2937] text-[#64748B] border-[#E2E8F0] dark:border-[#374151]' }`}>
+                                                📄 Document
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Show currently sent files */}
+                                    {reviewingPaper.correctionFiles && reviewingPaper.correctionFiles.length > 0 && (
+                                        <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mb-2">
+                                            Currently sent: <span className="font-medium text-indigo-600 dark:text-indigo-400">{reviewingPaper.correctionFiles.length} file(s)</span>
+                                        </p>
+                                    )}
+
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        <input
+                                            key={correctionMode}
+                                            type="file"
+                                            accept={correctionMode === 'image' ? 'image/*' : '.pdf,.doc,.docx'}
+                                            multiple={correctionMode === 'image'}
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files || []);
+                                                if (correctionMode === 'image' && files.length > 5) {
+                                                    setCorrectionError('Max 5 images allowed');
+                                                    setCorrectionFiles([]);
+                                                } else {
+                                                    setCorrectionFiles(correctionMode === 'document' ? files.slice(0, 1) : files);
+                                                    setCorrectionSuccess(false);
+                                                    setCorrectionError('');
+                                                }
+                                            }}
+                                            className="text-sm text-[#0F172A] dark:text-[#F1F5F9] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer"
+                                        />
+                                        <button
+                                            type="button"
+                                            disabled={correctionFiles.length === 0 || correctionUploading}
+                                            onClick={handleSendCorrectionFile}
+                                            className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+                                        >
+                                            {correctionUploading ? 'Sending...' : 'Send to Author'}
+                                        </button>
+                                    </div>
+                                    {correctionFiles.length > 0 && (
+                                        <ul className="mt-1 space-y-0.5">
+                                            {correctionFiles.map((f, i) => (
+                                                <li key={i} className="text-xs text-indigo-600 dark:text-indigo-400">• {f.name}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {correctionSuccess && <p className="text-xs text-green-600 dark:text-green-400 mt-1">✓ Files sent successfully!</p>}
+                                    {correctionError && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{correctionError}</p>}
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-3 mt-6">
-                            <Button variant="outline" onClick={() => { setReviewingPaper(null); setPdfFile(null); setUploadError(''); }}>Cancel</Button>
+                            <Button variant="outline" onClick={() => { setReviewingPaper(null); setPdfFile(null); setUploadError(''); setCorrectionFiles([]); setCorrectionSuccess(false); setCorrectionError(''); }}>Cancel</Button>
                             <Button
                                 onClick={handleSaveReview}
                                 disabled={reviewMutation.isPending || uploading}

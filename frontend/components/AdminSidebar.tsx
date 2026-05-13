@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, ShieldCheck, Shield } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 
@@ -29,20 +29,18 @@ export default function AdminSidebar() {
 
         {/* Admin role badge */}
         <div className="mt-4 flex items-center gap-3">
-          {isRootAdmin ? (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg ring-2 ring-purple-400/30">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg ring-2 ring-blue-400/30">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-          )}
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
+            isRootAdmin
+              ? 'bg-gradient-to-br from-purple-500 to-purple-700 ring-2 ring-purple-400/30'
+              : 'bg-gradient-to-br from-blue-500 to-blue-700 ring-2 ring-blue-400/30'
+          }`}>
+            <Shield className="w-5 h-5 text-white" />
+          </div>
           <div>
-            <p className="text-white text-sm font-semibold leading-tight">
-              {isRootAdmin ? 'Root Admin' : 'Admin'}
-            </p>
-            <p className="text-white/50 text-xs">Admin Panel</p>
+            {isRootAdmin && (
+              <p className="text-white text-sm font-bold leading-tight">Root</p>
+            )}
+            <p className="text-white/50 text-xs mt-0.5">Admin Panel</p>
           </div>
         </div>
       </div>

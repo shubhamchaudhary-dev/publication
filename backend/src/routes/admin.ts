@@ -152,6 +152,7 @@ router.put('/papers/:id/review', async (req: AuthRequest, res: Response): Promis
     const updateData: Record<string, any> = { status, remarks };
     if (status === 'published') {
       updateData.publishedAt = new Date();
+      updateData.correctionFiles = []; // clear all correction files on publish
     }
 
     const paper = await Paper.findByIdAndUpdate(req.params.id, updateData, { new: true });
@@ -199,5 +200,56 @@ router.post('/papers/:id/upload-pdf', async (req: AuthRequest, res: Response): P
   }
 });
 
-export default router;
+// POST /api/admin/papers/:id/correction-file
+// Send correction files to paper author — non-published papers only.
+// Appends to existing correctionFiles (does NOT replace). Each image batch ≤ 5.
+router.post('/papers/:id/correction-file', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { files } = req.body; // Array<{ fileBase64: string; fileName: string }>
+    if (!Array.isArray(files) || files.length === 0) {
+      res.status(400).json({ success: false, message: 'files array is required' });
+      return;
+    }
 
+    const paper = await Paper.findById(req.params.id);
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+    if (paper.status === 'published') {
+      res.status(400).json({ success: false, message: 'Cannot send correction file for a published paper' });
+      return;
+    }
+
+    // Validate and map incoming files — limit images per batch to 5
+    const mapped: Array<{ data: string; type: 'image' | 'document'; name: string }> = [];
+    let imageCountInBatch = 0;
+    for (const f of files) {
+      if (!f.fileBase64 || !f.fileName) {
+        res.status(400).json({ success: false, message: 'Each file must have fileBase64 and fileName' });
+        return;
+      }
+      const isImage = /^data:image\//i.test(f.fileBase64);
+      if (isImage) {
+        imageCountInBatch++;
+        if (imageCountInBatch > 5) {
+          res.status(400).json({ success: false, message: 'Maximum 5 images allowed per batch' });
+          return;
+        }
+      }
+      mapped.push({ data: f.fileBase64, type: isImage ? 'image' : 'document', name: f.fileName });
+    }
+
+    // APPEND to existing files — PDFs and previous image batches are preserved
+    if (!paper.correctionFiles) paper.correctionFiles = [];
+    paper.correctionFiles.push(...mapped);
+    await paper.save();
+
+    await cacheDelPattern('papers:*');
+    res.json({ success: true, data: { added: mapped.length, total: paper.correctionFiles.length } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err?.message || 'Upload failed' });
+  }
+});
+
+export default router;

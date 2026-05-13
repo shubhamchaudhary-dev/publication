@@ -248,7 +248,7 @@ router.get('/me', authenticate, (req: Request, res: Response): void => {
   const user = (req as AuthRequest).user!;
   res.json({
     success: true,
-    data: { id: user._id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, institution: user.institution },
+    data: { id: user._id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, institution: user.institution, isRootAdmin: user.isRootAdmin },
   });
 });
 

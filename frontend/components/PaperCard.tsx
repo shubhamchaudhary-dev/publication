@@ -9,8 +9,9 @@ export interface Paper {
   abstract: string;
   authors: string[];
   slug: string;
-  pdfUrl: string;           // original user-submitted Word/PDF file
-  publishedPdfUrl?: string; // admin-uploaded final formatted PDF
+  pdfUrl: string;
+  publishedPdfUrl?: string;
+  correctionFiles?: Array<{ data: string; type: 'image' | 'document'; name: string }>;
   views: number;
   downloads: number;
   status: string;

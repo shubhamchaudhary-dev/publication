@@ -5,8 +5,9 @@ export type PaperStatus = 'submitted' | 'under_review' | 'rejected' | 'published
 export interface IPaper extends Document {
   title: string;
   abstract: string;
-  pdfUrl: string;         // original user-submitted file (Word/PDF)
-  publishedPdfUrl?: string; // admin-uploaded final formatted PDF
+  pdfUrl: string;             // original user-submitted file (Word/PDF)
+  publishedPdfUrl?: string;   // admin-uploaded final formatted PDF
+  correctionFiles?: Array<{ data: string; type: 'image' | 'document'; name: string }>; // max 5
   authors: string[];
   subject: mongoose.Types.ObjectId;
   status: PaperStatus;
@@ -25,6 +26,13 @@ const PaperSchema = new Schema<IPaper>(
     abstract: { type: String, required: true },
     pdfUrl: { type: String, required: true },
     publishedPdfUrl: { type: String },
+    correctionFiles: [
+      {
+        data: { type: String },
+        type: { type: String, enum: ['image', 'document'] },
+        name: { type: String },
+      },
+    ],
     authors: [{ type: String, trim: true }],
     subject: { type: Schema.Types.ObjectId, ref: 'Subject', required: true },
     status: { type: String, enum: ['submitted', 'under_review', 'rejected', 'published'], default: 'submitted' },
