@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -65,8 +65,25 @@ html.dark body {
   color: #F1F5F9;
 }
 
+/* Make all headings match the home page blue color (#1e3a8a) globally */
+h1, h2, h3, h4, h5, h6 {
+  color: #1e3a8a !important;
+}
+
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+  color: #f1f5f9 !important;
+}
+
+/* Academic serif — Libre Baskerville for all font-serif elements */
 .font-serif {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Libre Baskerville', 'Times New Roman', Georgia, serif;
+}
+
+/* Italic variant for journal titles (ACM-style) */
+.font-serif-italic {
+  font-family: 'Libre Baskerville', 'Times New Roman', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
 }
 
 @layer utilities {

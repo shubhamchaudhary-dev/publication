@@ -1,11 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import Paper from '../models/Paper';
+import CMSConfig from '../models/CMSConfig';
+import User from '../models/User';
 import { authenticate, AuthRequest, optionalAuth } from '../middleware/auth';
 import { requireRole } from '../middleware/requireRole';
 import { cacheGet, cacheSet, cacheDelPattern } from '../utils/redis';
 import { hasUserViewedPaper, markUserViewedPaper } from '../utils/redis';
-import { uploadPDF } from '../utils/cloudinary';
+import { uploadPDF, uploadBase64 } from '../utils/cloudinary';
 import { createUniqueSlug } from '../utils/slugify';
 import mongoose from 'mongoose';
 
@@ -105,6 +107,11 @@ router.post(
         status: 'submitted',
         createdBy: req.user!._id,
         slug,
+        ...(req.body.coverLetterUrl   && { coverLetterUrl:   req.body.coverLetterUrl }),
+        ...(req.body.coverLetterName  && { coverLetterName:  req.body.coverLetterName }),
+        ...(req.body.reviewers && Array.isArray(req.body.reviewers) && { reviewers: req.body.reviewers }),
+        ...(req.body.keywords && Array.isArray(req.body.keywords) && { keywords: req.body.keywords }),
+        ...(req.body.highlights && { highlights: req.body.highlights }),
       });
 
       await cacheDelPattern('papers:*');
@@ -126,7 +133,14 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
       .populate('subject', 'name slug')
       .sort({ createdAt: -1 })
       .lean();
-    res.json({ success: true, data: papers });
+      
+    // Attach hasPayment flag for receipt download logic
+    const papersWithPayment = await Promise.all(papers.map(async (p) => {
+        const payment = await mongoose.model('Payment').findOne({ paperId: p._id, status: 'success' });
+        return { ...p, hasPayment: !!payment };
+    }));
+
+    res.json({ success: true, data: papersWithPayment });
   } catch {
     res.status(500).json({ success: false, message: 'Server error' });
   }
@@ -164,7 +178,29 @@ router.get('/:slug', optionalAuth, async (req: AuthRequest, res: Response): Prom
       .limit(3)
       .lean();
 
-    res.json({ success: true, data: { paper, related } });
+    // Check Membership Locking
+    let isLocked = false;
+    const cmsConfig = await CMSConfig.findOne({ key: 'homepage' });
+    const globalLock = cmsConfig?.value?.requireMembershipForAllPapers || false;
+    const paperLock = paper.requiresMembership || false;
+    
+    if (globalLock || paperLock) {
+      if (!req.user) {
+        isLocked = true;
+      } else {
+        const userDoc = await User.findById(req.user._id);
+        if (!userDoc?.hasMembership) {
+          isLocked = true;
+        } else if (userDoc.membershipExpiresAt && userDoc.membershipExpiresAt < new Date()) {
+          isLocked = true;
+          // Auto-revoke expired membership
+          userDoc.hasMembership = false;
+          await userDoc.save();
+        }
+      }
+    }
+
+    res.json({ success: true, data: { paper, related, isLocked } });
   } catch {
     res.status(500).json({ success: false, message: 'Server error' });
   }
@@ -196,9 +232,9 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         if (key === 'authors' && typeof req.body[key] === 'string') {
-          (paper as Record<string, unknown>)[key] = req.body[key].split(',').map((a: string) => a.trim()).filter(Boolean);
+          (paper as unknown as Record<string, unknown>)[key] = req.body[key].split(',').map((a: string) => a.trim()).filter(Boolean);
         } else {
-          (paper as Record<string, unknown>)[key] = req.body[key];
+          (paper as unknown as Record<string, unknown>)[key] = req.body[key];
         }
       }
     }
@@ -259,6 +295,140 @@ router.post('/:id/download', async (req: Request, res: Response): Promise<void> 
     }
     res.json({ success: true, data: { pdfUrl: paper.pdfUrl } });
   } catch {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/papers/:id/request-correction
+router.post('/:id/request-correction', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const paper = await Paper.findById(req.params.id);
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+
+    if (paper.createdBy.toString() !== req.user!._id.toString()) {
+      res.status(403).json({ success: false, message: 'Forbidden' });
+      return;
+    }
+
+    if (paper.status !== 'pre_proof') {
+      res.status(400).json({ success: false, message: 'Paper is not in pre-proof stage' });
+      return;
+    }
+
+    if (paper.correctionRequestCount && paper.correctionRequestCount >= 1) {
+      res.status(400).json({ success: false, message: 'Correction request limit reached' });
+      return;
+    }
+
+    const { correctionNotes, correctionFileBase64, correctionFileName } = req.body;
+    if (!correctionNotes && !correctionFileBase64) {
+      res.status(400).json({ success: false, message: 'Please provide correction notes or upload a corrected file' });
+      return;
+    }
+
+    let fileUrl: string | undefined = undefined;
+    if (correctionFileBase64) {
+      try {
+        fileUrl = await uploadBase64(correctionFileBase64, 'swarnpublication/corrections', 'raw');
+      } catch (cloudErr: any) {
+        console.error('[Author Correction Upload] Cloudinary error:', cloudErr);
+        res.status(500).json({ success: false, message: `File upload failed: ${cloudErr?.message || 'Cloudinary error'}` });
+        return;
+      }
+    }
+
+    paper.status = 'correction_requested';
+    paper.correctionRequested = true;
+    paper.correctionRequestCount = (paper.correctionRequestCount || 0) + 1;
+    if (correctionNotes) paper.authorCorrectionNotes = correctionNotes;
+    if (fileUrl) paper.authorCorrectionFileUrl = fileUrl;
+    
+    await paper.save();
+
+    await cacheDelPattern('papers:*');
+    res.json({ success: true, data: paper });
+  } catch {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/papers/:id/approve-proof
+router.post('/:id/approve-proof', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const paper = await Paper.findById(req.params.id);
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+
+    if (paper.createdBy.toString() !== req.user!._id.toString()) {
+      res.status(403).json({ success: false, message: 'Forbidden' });
+      return;
+    }
+
+    if (paper.status !== 'pre_proof') {
+      res.status(400).json({ success: false, message: 'Paper is not in pre-proof stage' });
+      return;
+    }
+
+    const config = await CMSConfig.findOne({ key: 'global_config' });
+    const requirePayment = config?.value?.enablePublicationPayment || false;
+
+    paper.proofApproved = true;
+    paper.proofApprovedAt = new Date();
+    paper.paymentRequired = requirePayment;
+    
+    if (requirePayment) {
+      paper.status = 'payment_pending';
+    } else {
+      paper.status = 'published';
+      paper.publishedAt = new Date();
+    }
+
+    await paper.save();
+    await cacheDelPattern('papers:*');
+    res.json({ success: true, data: paper });
+  } catch {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/papers/:id/submit-correction
+router.post('/:id/submit-correction', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const paper = await Paper.findById(req.params.id);
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+    if (paper.createdBy.toString() !== req.user!._id.toString()) {
+      res.status(403).json({ success: false, message: 'Forbidden' });
+      return;
+    }
+    if (paper.status !== 'correction_requested') {
+      res.status(400).json({ success: false, message: 'Paper is not in correction requested stage' });
+      return;
+    }
+    const { correctionFileBase64 } = req.body;
+    if (!correctionFileBase64) {
+      res.status(400).json({ success: false, message: 'Please upload a corrected file' });
+      return;
+    }
+    
+    let fileUrl = await uploadBase64(correctionFileBase64, 'swarnpublication/papers', 'raw');
+
+    // Override the pdfUrl and put back under review
+    paper.pdfUrl = fileUrl;
+    paper.status = 'under_review';
+    paper.correctionRequested = false;
+    
+    await paper.save();
+    await cacheDelPattern('papers:*');
+    res.json({ success: true, message: 'Correction submitted successfully', data: paper });
+  } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

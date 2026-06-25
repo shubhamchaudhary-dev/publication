@@ -17,17 +17,17 @@
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'DM Sans', sans-serif;
 
-    --nav-bg: #1a3550;
-    --nav-border: #243f60;
-    --nav-link: #7a9ab8;
-    --nav-link-hover: #ffffff;
-    --btn-ghost-border: #4a7aa8;
-    --btn-ghost-text: #9ac0e0;
-    --btn-ghost-hover-border: #ffffff;
-    --btn-ghost-hover-text: #ffffff;
-    --btn-solid-bg: #ffffff;
-    --btn-solid-text: #1a3550;
-    --btn-solid-hover: #e6f0f8;
+    --nav-bg: #ffffff;
+    --nav-border: #e2e8f0;
+    --nav-link: #475569;
+    --nav-link-hover: #0EA5A4;
+    --btn-ghost-border: #cbd5e1;
+    --btn-ghost-text: #475569;
+    --btn-ghost-hover-border: #0EA5A4;
+    --btn-ghost-hover-text: #0EA5A4;
+    --btn-solid-bg: #0EA5A4;
+    --btn-solid-text: #ffffff;
+    --btn-solid-hover: #0d8c8b;
     --btn-outline-border: #1a3550;
     --btn-outline-text: #1a3550;
     --btn-outline-hover-bg: #1a3550;
@@ -40,7 +40,7 @@
     --stats-muted: #e0eef8;
   }
 
-  .dark {
+  html.dark .swarn-home-override {
     --white: #1a1a1a;
     --paper: #1a1a1a;
     --sand: #1f1f1f;
@@ -55,17 +55,17 @@
     --banner-border: #1F2937;
     --orange: #20C997;
 
-    --nav-bg: #1a1a1a;
-    --nav-border: #262626;
-    --nav-link: #64748B;
-    --nav-link-hover: #F8FAFC;
-    --btn-ghost-border: #333333;
-    --btn-ghost-text: #64748B;
-    --btn-ghost-hover-border: #F8FAFC;
-    --btn-ghost-hover-text: #F8FAFC;
-    --btn-solid-bg: #158F7B;
+    --nav-bg: #0F172A;
+    --nav-border: #1E293B;
+    --nav-link: #94A3B8;
+    --nav-link-hover: #0EA5A4;
+    --btn-ghost-border: #334155;
+    --btn-ghost-text: #94A3B8;
+    --btn-ghost-hover-border: #0EA5A4;
+    --btn-ghost-hover-text: #0EA5A4;
+    --btn-solid-bg: #0EA5A4;
     --btn-solid-text: #ffffff;
-    --btn-solid-hover: #127968;
+    --btn-solid-hover: #0d8c8b;
     --btn-outline-border: #333333;
     --btn-outline-text: #64748B;
     --btn-outline-hover-bg: #1f1f1f;
@@ -127,15 +127,19 @@
     background: var(--btn-solid-hover);
   }
 
-  /* ── HERO: background image (light/day mode only) ── */
   .swarn-home-override .hero {
     position: relative;
-    padding: 5rem 2.5rem 4rem;
+    padding: 2.5rem;
+    min-height: calc(100vh - 46px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-bottom: 1px solid var(--border);
-    background-image: url('/images/hero-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* [UNDO PATH] Uncomment the following lines to restore the original background image */
+    /* background-image: url('/images/hero-bg.png'); */
+    /* background-size: cover; */
+    /* background-position: center; */
+    /* background-repeat: no-repeat; */
   }
 
   /* No overlay, no vignette — pure image */
@@ -160,6 +164,7 @@
     z-index: 1;
     max-width: 900px;
     margin: 0 auto;
+    width: 100%;
   }
 
   /* Force hero text visible over background image */
@@ -300,27 +305,20 @@
   }
 
   .swarn-home-override .swarnspace-banner {
-    background: rgba(255, 255, 255, 0.38);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.40);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
+    background: transparent;
     padding: 2rem 2.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
     max-width: 900px;
-    margin: 1rem auto 0;
+    margin: 0 auto;
   }
 
   /* Dark mode: restore solid banner */
   .dark .swarn-home-override .swarnspace-banner {
-    background: var(--banner-bg);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: 1px solid var(--banner-border);
+    background: transparent;
+    border: none;
     box-shadow: none;
   }
 
@@ -360,6 +358,22 @@
     font-size: 14px;
     max-width: 400px;
     margin-bottom: 1.2rem;
+  }
+
+  /* Dark mode text colors for banner */
+  .dark .swarn-home-override .swarnspace-kicker {
+    color: #94C8E0;
+  }
+  .dark .swarn-home-override .swarnspace-kicker-dot {
+    background: #94C8E0;
+  }
+  .dark .swarn-home-override .swarnspace-banner h2,
+  .dark .swarn-home-override .swarnspace-banner h2 * {
+    color: #F1F5F9 !important;
+  }
+  .dark .swarn-home-override .swarnspace-banner p,
+  .dark .swarn-home-override .swarnspace-banner p * {
+    color: #CBD5E1 !important;
   }
 
   .swarn-home-override .banner-btns {
@@ -434,22 +448,32 @@
   }
 
   .swarn-home-override .stats-section {
-    background: var(--stats-bg);
-    padding: 2.5rem;
+    background: transparent;
+    padding: 0.5rem 0;
+    color: var(--ink);
+    border: none;
   }
 
   .swarn-home-override .stats-inner {
-    max-width: 900px;
+    background: var(--white);
+    width: 98%;
+    max-width: 1600px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0;
+    border-radius: 24px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0;
   }
 
   .swarn-home-override .stat-item {
     text-align: center;
     padding: 1rem;
-    border-right: 1px solid var(--banner-border);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .swarn-home-override .stat-item:last-child {
@@ -460,13 +484,21 @@
     font-family: var(--font-serif);
     font-size: 2.2rem;
     font-weight: 700;
-    color: var(--stats-text);
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 90px;
+    background: var(--white);
+    border-radius: 50%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    margin: 0 auto 1rem auto;
+    color: var(--ink);
   }
 
   .swarn-home-override .stat-label {
     font-size: 12.5px;
-    color: var(--stats-muted);
+    color: var(--ink-faint);
     text-transform: uppercase;
     letter-spacing: .06em;
     margin-top: 2px;
@@ -490,8 +522,15 @@
 
   .swarn-home-override .section-title {
     font-family: var(--font-serif);
-    font-size: 1.7rem;
-    color: var(--ink);
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  
+  .dark .swarn-home-override .section-title {
+    color: #f1f5f9;
   }
 
   .swarn-home-override .view-all {
@@ -525,164 +564,389 @@
   .swarn-home-override .acm-paper-card {
     background: var(--white);
     border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.5rem;
+    border-radius: 8px;
+    padding: 1.25rem;
     display: flex;
-    gap: 2rem;
+    gap: 1.25rem;
     cursor: pointer;
-    transition: box-shadow .2s;
+    transition: box-shadow .2s, border-color .2s;
   }
 
   .swarn-home-override .acm-paper-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, .05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
   }
 
-  .swarn-home-override .acm-paper-meta {
-    flex: 0 0 140px;
+  /* LEFT COLUMN (Cover) */
+  .swarn-home-override .acm-paper-left {
+    flex: 0 0 90px;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .swarn-home-override .acm-paper-cover {
+    width: 90px;
+    height: 125px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
+  }
+
+  .swarn-home-override .acm-paper-cover-placeholder {
+    width: 90px;
+    height: 125px;
+    background: var(--teal-light);
+    color: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: bold;
+    border: 1px solid var(--border);
+  }
+
+  /* CENTER COLUMN (Details) */
+  .swarn-home-override .acm-paper-center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--border-light);
+  }
+
+  .swarn-home-override .acm-paper-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   .swarn-home-override .acm-paper-type {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--ink);
+    color: var(--white);
+    background: var(--teal);
+    padding: 2px 8px;
+    border-radius: 12px;
     letter-spacing: .05em;
-  }
-
-  .swarn-home-override .acm-paper-date {
-    font-size: 12px;
-    color: var(--ink-muted);
   }
 
   .swarn-home-override .acm-paper-status {
     font-size: 11px;
-    color: var(--ink-faint);
+    color: var(--ink-muted);
     text-transform: uppercase;
-    margin-top: 0.5rem;
-  }
-
-  .swarn-home-override .acm-paper-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    font-weight: 600;
   }
 
   .swarn-home-override .acm-paper-title {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     line-height: 1.3;
-    color: #0077b5; /* ACM Blue style */
-    font-weight: 500;
+    color: #1a3550; 
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .swarn-home-override .acm-paper-card:hover .acm-paper-title {
-    text-decoration: underline;
+    color: var(--teal);
   }
 
   .dark .swarn-home-override .acm-paper-title {
-    color: #5ab4e5;
+    color: #F1F5F9;
   }
 
   .swarn-home-override .acm-paper-authors {
     font-size: 13px;
     color: var(--ink-faint);
-    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-style: italic;
   }
 
   .swarn-home-override .acm-paper-abstract {
-    font-size: 13.5px;
+    font-size: 13px;
     color: var(--ink-muted);
-    line-height: 1.6;
-    margin-top: 0.75rem;
+    line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  .swarn-home-override .acm-paper-footer {
-    display: flex;
-    gap: 1rem;
+  .swarn-home-override .acm-paper-keywords {
     margin-top: 1rem;
-    font-size: 13px;
-    color: var(--teal);
-    font-weight: 600;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
-  .swarn-home-override .acm-stat {
+  .swarn-home-override .acm-paper-keyword {
+    font-size: 11px;
+    color: var(--teal);
+    background: var(--teal-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    border: 1px solid rgba(21, 143, 123, 0.2);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* RIGHT COLUMN (Stats & Actions) */
+  .swarn-home-override .acm-paper-right {
+    flex: 0 0 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    border-left: 1px solid var(--border-light);
+    padding-left: 1.5rem;
+  }
+
+  .swarn-home-override .acm-paper-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .swarn-home-override .acm-stat-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0.75rem;
+    text-align: left;
+  }
+
+  .swarn-home-override .acm-stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .swarn-home-override .acm-stat-icon.view-icon {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .swarn-home-override .acm-stat-icon.download-icon {
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  .swarn-home-override .acm-stat-icon.date-icon {
+    background: #f5f3ff;
+    color: #4338ca;
+  }
+
+  .swarn-home-override .acm-stat-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .swarn-home-override .acm-stat-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.1;
+  }
+  
+  .dark .swarn-home-override .acm-stat-val {
+    color: #F1F5F9;
+  }
+
+  .swarn-home-override .acm-stat-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: capitalize;
+  }
+
+  .swarn-home-override .acm-paper-actions {
+    margin-top: 0.5rem;
   }
 
   .swarn-home-override .acm-view-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    background: #0077b5;
+    background: var(--teal);
     color: #ffffff;
     font-size: 13px;
-    font-weight: 500;
-    padding: 6px 16px;
-    border-radius: 4px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
     text-decoration: none;
     transition: background 0.2s;
   }
 
   .swarn-home-override .acm-view-btn:hover {
-    background: #005e8e;
+    background: #0d5c47;
   }
 
-  .swarn-home-override .subjects-grid {
+  /* Responsive Cards */
+  @media (max-width: 768px) {
+    .swarn-home-override .acm-paper-card {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .swarn-home-override .acm-paper-left {
+      flex: none;
+      align-items: flex-start;
+    }
+
+    .swarn-home-override .acm-paper-cover,
+    .swarn-home-override .acm-paper-cover-placeholder {
+      width: 80px;
+      height: 110px;
+    }
+
+    .swarn-home-override .acm-paper-center {
+      border-right: none;
+      padding-right: 0;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 1.5rem;
+    }
+
+    .swarn-home-override .acm-paper-right {
+      flex: none;
+      text-align: left;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .swarn-home-override .acm-stat {
+      justify-content: flex-start;
+    }
+  }
+
+  /* ── FEATURE CARDS (Why Researchers Choose) ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .swarn-home-override .features-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 1.1rem;
   }
 
-  .swarn-home-override .subject-card {
+  .swarn-home-override .feature-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.4rem 1.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: none;
+    border-radius: 12px;
+    padding: 1.6rem 1.3rem 1.4rem;
     text-align: center;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all .2s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .6rem;
+    gap: 0.7rem;
+    transform: scale(1) translateY(0);
+    transition: box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: fadeUp 0.5s ease both;
+    cursor: pointer;
   }
 
-  .swarn-home-override .subject-card:hover {
-    border-color: var(--teal);
-    background: var(--teal-light);
-    transform: translateY(-2px);
+  .swarn-home-override .feature-card:hover {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    z-index: 2;
   }
 
-  .swarn-home-override .subject-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
+  /* stagger animation delay */
+  .swarn-home-override .feature-card:nth-child(1) { animation-delay: 0.05s; }
+  .swarn-home-override .feature-card:nth-child(2) { animation-delay: 0.10s; }
+  .swarn-home-override .feature-card:nth-child(3) { animation-delay: 0.15s; }
+  .swarn-home-override .feature-card:nth-child(4) { animation-delay: 0.20s; }
+  .swarn-home-override .feature-card:nth-child(5) { animation-delay: 0.25s; }
+  .swarn-home-override .feature-card:nth-child(6) { animation-delay: 0.30s; }
+  .swarn-home-override .feature-card:nth-child(7) { animation-delay: 0.35s; }
+  .swarn-home-override .feature-card:nth-child(8) { animation-delay: 0.40s; }
+
+  .swarn-home-override .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     background: var(--teal-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    color: var(--teal);
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
   }
 
-  .swarn-home-override .subject-name {
+  .swarn-home-override .feature-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .swarn-home-override .feature-card:hover .feature-icon {
+    background: var(--teal);
+    color: #ffffff;
+  }
+
+  .swarn-home-override .feature-title {
     font-size: 13.5px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
   }
 
-  .swarn-home-override .subject-count {
-    font-size: 12px;
-    color: var(--ink-faint);
+  .swarn-home-override .feature-desc {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.55;
+  }
+
+  /* dark mode */
+  .dark .swarn-home-override .feature-card {
+    background: #111827;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  .dark .swarn-home-override .feature-card:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    .swarn-home-override .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .swarn-home-override .features-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .swarn-home-override .feature-card {
+      padding: 1.2rem 0.9rem;
+    }
+  }
+
+  .swarn-home-override .trending-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
   }
 
   .swarn-home-override .trending-list {
@@ -963,19 +1227,20 @@
 
   .swarn-home-override .newsletter-form button {
     padding: 0 24px;
-    background: var(--orange);
+    background: #1e3a8a;
     color: #fff;
     border: none;
     font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+    font-weight: 700;
     font-family: var(--font-sans);
     white-space: nowrap;
-    transition: background .2s;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: background 0.2s ease;
   }
 
   .swarn-home-override .newsletter-form button:hover {
-    background: #a83b15;
+    background: #152b66;
   }
 
   .swarn-home-override .newsletter-note {
@@ -1149,8 +1414,8 @@
   }
 
   .swarn-home-override footer {
-    background: #111;
-    color: #aaa;
+    background: var(--nav-bg);
+    color: #ccc;
     padding: 3.5rem 2.5rem 2rem;
   }
 
@@ -1295,6 +1560,11 @@
       flex-direction: column;
     }
 
+    .swarn-home-override .trending-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
     .swarn-home-override nav .nav-links {
       display: none;
     }
@@ -1311,5 +1581,524 @@
     .swarn-home-override .stats-inner,
     .swarn-home-override .footer-grid {
       grid-template-columns: 1fr;
+    }
+
+    .swarn-home-override .hero-search-bar {
+      flex-direction: column;
+    }
+
+    .swarn-home-override .hero-search-bar input,
+    .swarn-home-override .hero-search-bar select,
+    .swarn-home-override .hero-search-bar button {
+      border-left: none;
+      width: 100%;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+
+    .swarn-home-override .acm-paper-card {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .swarn-home-override .acm-paper-meta {
+      flex: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 0.75rem;
+    }
+  }
+
+  /* ── FEATURED AUTHORS CAROUSEL ── */
+  .swarn-home-override .authors-carousel-section {
+    background: var(--white);
+    padding: 5rem 2.5rem;
+    overflow: hidden;
+  }
+
+  .swarn-home-override .carousel-container {
+    max-width: 800px;
+    margin: 3rem auto 0;
+    position: relative;
+    user-select: none;
+  }
+
+  .swarn-home-override .portraits-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .swarn-home-override .portrait-wrapper {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .swarn-home-override .portrait-circle {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--sand);
+    border: 3px solid var(--white);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--teal);
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  .swarn-home-override .portrait-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 50%;
+    transition: opacity 0.4s ease;
+  }
+
+  /* Simulated abstract portrait backgrounds based on initials */
+  .swarn-home-override .portrait-circle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,119,181,0.1), rgba(123,45,158,0.1));
+    z-index: -1;
+  }
+
+  .swarn-home-override .portrait-wrapper.inactive {
+    transform: scale(0.85);
+    opacity: 0.6;
+    filter: grayscale(100%);
+  }
+
+  .swarn-home-override .portrait-wrapper.active {
+    transform: scale(1.15);
+    z-index: 10;
+    opacity: 1;
+    filter: grayscale(0%);
+  }
+
+  .swarn-home-override .portrait-wrapper.active .portrait-circle {
+    border-color: var(--teal);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0,119,181,0.25);
+  }
+  .swarn-home-override .portrait-wrapper.active .portrait-circle::before {
+    background: var(--teal);
+  }
+
+  .swarn-home-override .portrait-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120%;
+    height: 120%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(0,119,181,0.15) 0%, rgba(0,119,181,0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    animation: pulse 2s infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  }
+
+  .swarn-home-override .profile-display {
+    position: relative;
+    min-height: 220px;
+    text-align: center;
+  }
+
+  .swarn-home-override .profile-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .swarn-home-override .profile-content.active-profile {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .swarn-home-override .profile-content.hidden-profile {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+
+  .swarn-home-override .role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--teal-light);
+    color: var(--teal);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .swarn-home-override .profile-name {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+
+  .swarn-home-override .profile-institution {
+    font-size: 14.5px;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .swarn-home-override .profile-bio-card {
+    background: var(--sand);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .swarn-home-override .profile-bio {
+    font-size: 14.5px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .swarn-home-override .profile-quote {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    position: relative;
+  }
+
+  .swarn-home-override .profile-quote::before {
+    content: '"';
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--border-light);
+    position: absolute;
+    top: -10px;
+    left: -20px;
+  }
+
+  .swarn-home-override .progress-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 3rem;
+  }
+
+  .swarn-home-override .dot {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .swarn-home-override .dot.active {
+    background: var(--teal-light);
+  }
+
+  .swarn-home-override .dot-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--teal);
+    width: 0%;
+    animation: fillDot 5s linear forwards;
+  }
+
+  @keyframes fillDot {
+    to { width: 100%; }
+  }
+
+  /* Dark mode */
+  .dark .swarn-home-override .authors-carousel-section {
+    background: #0B1120;
+  }
+  .dark .swarn-home-override .portrait-circle {
+    border-color: #1F2937;
+    background: #111827;
+  }
+  .dark .swarn-home-override .profile-bio-card {
+    background: #111827;
+    border-color: #1F2937;
+  }
+
+  /* ------------------------------------------------------------- */
+  /* FEATURED JOURNALS OVERLAPPING CAROUSEL                      */
+  /* ------------------------------------------------------------- */
+  
+  .swarn-home-override .featured-journals-section {
+    padding: 6rem 0;
+    background: linear-gradient(180deg, var(--white) 0%, #FAFBFC 100%);
+    overflow: hidden;
+  }
+  
+  .dark .swarn-home-override .featured-journals-section {
+    background: linear-gradient(180deg, #0F172A 0%, #0B1120 100%);
+  }
+
+  .swarn-home-override .journals-interactive-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4rem;
+    margin-top: 4rem;
+    position: relative;
+    min-height: 400px;
+  }
+
+  /* Left Panel: Text Detail */
+  .swarn-home-override .journal-detail-panel {
+    flex: 0 0 40%;
+    max-width: 450px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .swarn-home-override .journal-detail-content {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark .swarn-home-override .journal-detail-content {
+    background: rgba(17, 24, 39, 0.7);
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .swarn-home-override .journal-badge {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    background: var(--teal-light);
+    color: var(--teal);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+  }
+  .dark .swarn-home-override .journal-badge {
+    background: rgba(13, 124, 102, 0.2);
+    color: #4ade80;
+  }
+
+  .swarn-home-override .journal-title {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .dark .swarn-home-override .journal-title {
+    color: #fff;
+  }
+
+  .swarn-home-override .journal-category {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--teal);
+    margin-bottom: 1rem;
+  }
+
+  .swarn-home-override .journal-description {
+    font-size: 15px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .swarn-home-override .view-journal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--teal);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0.8rem 1.8rem;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .swarn-home-override .view-journal-btn:hover {
+    background: var(--teal-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(13, 124, 102, 0.2);
+  }
+
+  /* Right Panel: Overlapping Circles */
+  .swarn-home-override .journals-carousel-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 400px;
+  }
+
+  .swarn-home-override .journals-carousel-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    perspective: 1000px;
+  }
+
+  .swarn-home-override .journal-circle-wrapper {
+    position: absolute;
+    top: 50%;
+    margin-top: -125px; /* Half of height */
+    left: 20%;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    cursor: grab;
+    transform-origin: center center;
+    will-change: transform, opacity, z-index;
+  }
+  .swarn-home-override .journal-circle-wrapper:active {
+    cursor: grabbing;
+  }
+
+  .swarn-home-override .journal-circle-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--white);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    transition: filter 0.3s ease;
+  }
+
+  .dark .swarn-home-override .journal-circle-inner {
+    background: #1F2937;
+    border-color: #374151;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .swarn-home-override .journal-circle-wrapper:not(.active) .journal-circle-inner {
+    filter: grayscale(100%) brightness(0.9);
+  }
+
+  .swarn-home-override .journal-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .swarn-home-override .journal-initials {
+    font-family: var(--font-serif);
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--teal-light);
+  }
+
+  .swarn-home-override .upcoming-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    width: 100%;
+    height: 100%;
+    color: var(--ink-faint);
+  }
+  .dark .swarn-home-override .upcoming-placeholder {
+    background: linear-gradient(135deg, #374151, #1F2937);
+  }
+
+  .swarn-home-override .sparkle-icon {
+    font-size: 40px;
+    margin-bottom: 0.5rem;
+    opacity: 0.4;
+  }
+
+  .swarn-home-override .lock-text {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+
+  .swarn-home-override .journal-circle-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 140%;
+    height: 140%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(13, 124, 102, 0.15) 0%, rgba(13, 124, 102, 0) 70%);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulseGlow 3s infinite alternate ease-in-out;
+  }
+
+  @keyframes pulseGlow {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  }
+
+  @media (max-width: 900px) {
+    .swarn-home-override .journals-interactive-area {
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .swarn-home-override .journal-detail-panel {
+      flex: none;
+      width: 100%;
+      max-width: 100%;
+    }
+    .swarn-home-override .journals-carousel-container {
+      width: 100%;
+      height: 350px;
+    }
+    .swarn-home-override .journal-circle-wrapper {
+      left: 50%;
+      margin-left: -125px; /* Center horizontally */
     }
   }

@@ -50,7 +50,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1F2937] rounded-2xl p-8 shadow-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-[#1A3C5E] dark:text-white font-bold text-xl font-serif mb-2">
-            <BookOpen className="w-6 h-6 text-[#0D7C66]" /> SwarnPublication
+            <BookOpen className="w-6 h-6 text-[#0D7C66]" /> SwapanPublication
           </Link>
           <h1 className="text-2xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mt-2">Welcome back</h1>
           <p className="text-[#64748B] dark:text-[#94A3B8] text-sm mt-1">Sign in to your account</p>
@@ -76,7 +76,10 @@ export default function LoginPage() {
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/forgot-password" className="text-xs text-[#0D7C66] hover:underline">Forgot Password?</Link>
+            </div>
             <Input id="password" type="password" {...register('password')} className="mt-1" placeholder="••••••••" />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>

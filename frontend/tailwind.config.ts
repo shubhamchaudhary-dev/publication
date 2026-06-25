@@ -16,8 +16,8 @@ const config: Config = {
         'muted-text': { light: '#64748B', dark: '#94A3B8' },
       },
       fontFamily: {
-        serif: ['Playfair Display', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Libre Baskerville', 'Times New Roman', 'Georgia', 'serif'],
+        sans: ['Inter', 'Arial', 'Helvetica', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

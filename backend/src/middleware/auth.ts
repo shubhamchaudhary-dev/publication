@@ -4,7 +4,7 @@ import { isTokenBlacklisted } from '../utils/redis';
 import User, { IUser } from '../models/User';
 
 export interface AuthRequest extends Request {
-  user?: IUser;
+  user?: any;
   token?: string;
 }
 

@@ -1,0 +1,128 @@
+Created At: 2026-06-24T06:38:04Z
+Completed At: 2026-06-24T06:38:04Z
+File Path: `file:///c:/Users/balya/Downloads/orchids-swarn-publication-main/orchids-swarn-publication-main/frontend/app/browse/page.tsx`
+Total Lines: 664
+Total Bytes: 47185
+Showing lines 1 to 120
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: 'use client';
+2: import { useState } from 'react';
+3: import { useQuery } from '@tanstack/react-query';
+4: import { useSearchParams, useRouter } from 'next/navigation';
+5: import Link from 'next/link';
+6: import { BookOpen, ChevronDown, ArrowRight, FileText, Award, Calendar, Hash, Clock, Eye, Download } from 'lucide-react';
+7: import api from '@/lib/api';
+8: import Navbar from '@/components/Navbar';
+9: import Footer from '@/components/Footer';
+10: import PaperCard, { Paper } from '@/components/PaperCard';
+11: import SkeletonCard from '@/components/SkeletonCard';
+12: import { Button } from '@/components/ui/button';
+13: 
+14: interface Subject {
+15:     _id: string;
+16:     name: string;
+17:     slug: string;
+18:     paperCount: number;
+19: }
+20: 
+21: interface PapersResponse {
+22:     data: Paper[];
+23:     pagination: { page: number; limit: number; total: number; totalPages: number; };
+24: }
+25: 
+26: // Static journal data — add per-journal content here
+27: // NOTE: gradient uses real CSS linear-gradient() strings, NOT Tailwind classes
+28: // (dynamic Tailwind classes get purged at build time)
+29: const JOURNAL_DATA: Record<string, {
+30:     title: string;
+31:     tagline: string;
+32:     description: string;
+33:     scope?: string[];
+34:     gradient: string;  // CSS linear-gradient() value
+35:     bannerImage?: string; // Optional background image for the detail page header
+36:     coverImage?: string; // Optional cover thumbnail image for the journal list
+37:     eicName?: string;
+38:     eicTitle?: string;
+39:     eicPhoto?: string;
+40:     discipline?: string;
+41:     frequency?: string;
+42:     issn?: string;
+43:     established?: string;
+44: }> = {
+45:     'samanvay': {
+46:         title: 'Samanvay Journal',
+47:         tagline: 'A Multidisciplinary Journal in Social Sciences & Humanities',
+48:         gradient: 'linear-gradient(135deg, #4a1a5c, #7b2d9e)',
+49:         bannerImage: '/images/samnaybanner.png',
+50:         description: 'Samanvay Journal is a multidisciplinary journal in the field of Social Sciences and Humanities dedicated to promoting high-quality academic research and scholarly dialogue. The journal primarily emphasizes quantitative social science research and methodological advancements while also encouraging diverse theoretical and interdisciplinary contributions.\n\nThe journal aims to provide a platform for researchers, academicians, professionals, and scholars to publish original and innovative work addressing contemporary social issues and emerging challenges in society. It seeks to foster critical understanding, evidence-based analysis, and the development of new perspectives across various disciplines within the social sciences and humanities.\n\nThe journal strongly encourages multi- and inter-disciplinary research that bridges traditional academic boundaries and contributes to broader intellectual and societal development. Through rigorous peer review and academic standards, Samanvay Journal strives to support meaningful research that advances knowledge in Social Sciences and Humanities.',
+51:         scope: [
+52:             'Quantitative social science research and statistical methodologies',
+53:             'Empirical and evidence-based studies',
+54:             'Theoretical and conceptual research articles',
+55:             'Case studies addressing social, cultural, economic, educational, and political issues',
+56:             'Methodological and analytical research papers',
+57:             'Systematic literature reviews and review articles',
+58:             'Interdisciplinary and multidisciplinary research contributions',
+59:             'Innovative, experimental, and emerging research approaches',
+60:             'Replication studies and validation research',
+61:             'Studies reporting negative or non-significant findings that contribute to scholarly transparency and academic integrity',
+62:         ],
+63:         eicName: 'Editor-in-Chief',
+64:         eicTitle: 'Samanvay Journal',
+65:         eicPhoto: '/images/avatars/samanway.jpg',
+66:         coverImage: '/images/avatars/samanwaybook.jpg',
+67:         discipline: 'Social Sciences & Humanities',
+68:         frequency: 'Bi-Annual',
+69:         issn: '2583-XXXX',
+70:         established: '2026',
+71:     },
+72:     'samanvay journal': {
+73:         title: 'Samanvay Journal',
+74:         tagline: 'A Multidisciplinary Journal in Social Sciences & Humanities',
+75:         gradient: 'linear-gradient(135deg, #4a1a5c, #7b2d9e)',
+76:         bannerImage: '/images/samnaybanner.png',
+77:         description: 'Samanvay Journal is a multidisciplinary journal in the field of Social Sciences and Humanities dedicated to promoting high-quality academic research and scholarly dialogue. The journal primarily emphasizes quantitative social science research and methodological advancements while also encouraging diverse theoretical and interdisciplinary contributions.\n\nThe journal aims to provide a platform for researchers, academicians, professionals, and scholars to publish original and innovative work addressing contemporary social issues and emerging challenges in society. It seeks to foster critical understanding, evidence-based analysis, and the development of new perspectives across various disciplines within the social sciences and humanities.\n\nThe journal strongly encourages multi- and inter-disciplinary research that bridges traditional academic boundaries and contributes to broader intellectual and societal development. Through rigorous peer review and academic standards, Samanvay Journal strives to support meaningful research that advances knowledge in Social Sciences and Humanities.',
+78:         scope: [
+79:             'Quantitative social science research and statistical methodologies',
+80:             'Empirical and evidence-based studies',
+81:             'Theoretical and conceptual research articles',
+82:             'Case studies addressing social, cultural, economic, educational, and political issues',
+83:             'Methodological and analytical research papers',
+84:             'Systematic literature reviews and review articles',
+85:             'Interdisciplinary and multidisciplinary research contributions',
+86:             'Innovative, experimental, and emerging research approaches',
+87:             'Replication studies and validation research',
+88:             'Studies reporting negative or non-significant findings that contribute to scholarly transparency and academic integrity',
+89:         ],
+90:         eicName: 'Editor-in-Chief',
+91:         eicTitle: 'Samanvay Journal',
+92:         eicPhoto: '/images/avatars/samanway.jpg',
+93:         coverImage: '/images/avatars/samanwaybook.jpg',
+94:         discipline: 'Social Sciences & Humanities',
+95:         frequency: 'Bi-Annual',
+96:         issn: '2583-XXXX',
+97:         established: '2026',
+98:     },
+99:     'computer science': {
+100:         title: 'Swapna Computer Science Journal',
+101:         tagline: 'Advancing Computing Research & Innovation',
+102:         gradient: 'linear-gradient(135deg, #1a3a5c, #0077b5)',
+103:         description: 'A peer-reviewed academic journal publishing original research contributions in computer science, software engineering, artificial intelligence, and emerging technologies. This journal welcomes high-quality submissions from researchers and practitioners worldwide.',
+104:     },
+105:     'mathematics': {
+106:         title: 'Swapna Mathematics Journal',
+107:         tagline: 'Pure & Applied Mathematical Research',
+108:         gradient: 'linear-gradient(135deg, #2d1a5c, #7b2fbf)',
+109:         description: 'A peer-reviewed journal dedicated to advancing knowledge in pure and applied mathematics. We publish original research articles, reviews, and surveys covering a broad spectrum of mathematical sciences.',
+110:     },
+111:     'physics': {
+112:         title: 'Swapna Physics Journal',
+113:         tagline: 'Frontiers of Physical Sciences',
+114:         gradient: 'linear-gradient(135deg, #1a3a2d, #0d7c66)',
+115:         description: 'A peer-reviewed journal publishing cutting-edge research across all areas of physics, including theoretical, experimental, and computational approaches.',
+116:     },
+117:     'economics': {
+118:         title: 'Swapna Economics Journal',
+119:         tagline: 'Economic Theory, Policy & Analysis',
+120:         gradient: 'linear-gradient(135deg, #5c2d1a, #c05a1f)',
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

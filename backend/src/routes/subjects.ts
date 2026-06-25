@@ -11,6 +11,11 @@ const router = Router();
 
 const subjectSchema = z.object({
   name: z.string().min(2).max(100),
+  shortDescription: z.string().optional(),
+  category: z.string().optional(),
+  coverImage: z.string().optional(),
+  issn: z.string().optional(),
+  status: z.enum(['active', 'coming-soon', 'archived']).optional(),
 });
 
 // GET /api/subjects
@@ -55,7 +60,15 @@ router.post('/', authenticate, requireRole('admin'), async (req: Request, res: R
       res.status(409).json({ success: false, message: 'Subject already exists' });
       return;
     }
-    const subject = await Subject.create({ name: data.name, slug });
+    const subject = await Subject.create({ 
+      name: data.name, 
+      slug,
+      shortDescription: data.shortDescription,
+      category: data.category,
+      coverImage: data.coverImage,
+      issn: data.issn,
+      status: data.status || 'active',
+    });
     await cacheDel('subjects:all');
     res.status(201).json({ success: true, data: subject });
   } catch (err) {
@@ -74,7 +87,15 @@ router.put('/:id', authenticate, requireRole('admin'), async (req: Request, res:
     const slug = createSlug(data.name);
     const subject = await Subject.findByIdAndUpdate(
       req.params.id,
-      { name: data.name, slug },
+      { 
+        name: data.name, 
+        slug,
+        shortDescription: data.shortDescription,
+        category: data.category,
+        coverImage: data.coverImage,
+        issn: data.issn,
+        ...(data.status && { status: data.status }),
+      },
       { new: true }
     );
     if (!subject) {

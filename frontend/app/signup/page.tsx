@@ -74,7 +74,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1F2937] rounded-2xl p-8 shadow-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-[#1A3C5E] dark:text-white font-bold text-xl font-serif mb-2">
-            <BookOpen className="w-6 h-6 text-[#0D7C66]" /> SwarnPublication
+            <BookOpen className="w-6 h-6 text-[#0D7C66]" /> SwapanPublication
           </Link>
           <h1 className="text-2xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mt-2">Create an account</h1>
           <p className="text-[#64748B] dark:text-[#94A3B8] text-sm mt-1">Join as a reader or researcher</p>

@@ -58,3 +58,56 @@ export async function sendOTPEmail(to: string, otp: string): Promise<void> {
         console.log('[Email] Preview URL: %s', nodemailer.getTestMessageUrl(info));
     }
 }
+
+export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
+    console.log('\n================================');
+    console.log(`[Email] Password Reset for ${to}`);
+    console.log(`Token: ${token}`);
+    console.log('================================\n');
+
+    let transporter;
+
+    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            secure: Number(process.env.SMTP_PORT) === 465,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+    } else {
+        const testAccount = await nodemailer.createTestAccount();
+        transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass,
+            },
+        });
+    }
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/reset-password?token=${token}`;
+
+    const info = await transporter.sendMail({
+        from: '"SwarnPublication" <noreply@swarnpublication.com>',
+        to,
+        subject: 'Reset your password',
+        text: `You requested a password reset. Click this link to reset it: ${resetUrl}`,
+        html: `<div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #122A40;">Reset your password</h2>
+        <p>You recently requested to reset your password for your SwarnPublication account. Click the button below to reset it.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #0EA5A4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Reset Password</a>
+        </div>
+        <p style="font-size: 12px; color: #666;">If you did not request a password reset, please ignore this email. This link is only valid for 1 hour.</p>
+      </div>`,
+    });
+
+    if (info.messageId) {
+        console.log('[Email] Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    }
+}

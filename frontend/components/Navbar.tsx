@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, X, BookOpen, LogOut, User } from 'lucide-react';
+import { Menu, X, BookOpen, LogOut, User, ChevronDown } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useAuthStore } from '@/store/authStore';
 
@@ -16,21 +16,38 @@ export default function Navbar() {
     router.push('/');
   };
   return (
-    <nav className="sticky top-0 z-50 bg-[var(--nav-bg)] border-b border-[var(--nav-border)] shadow-sm" style={{ fontFamily: 'var(--font-sans)', fontSize: '15px' }}>
+    <nav className="sticky top-0 z-50 bg-[var(--nav-bg)]" style={{ fontFamily: 'var(--font-sans)', fontSize: '15px' }}>
       <div className="w-full px-[2.5rem]">
-        <div className="flex items-center justify-between h-[58px]">
+        <div className="flex items-center justify-between h-[48px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-[8px] text-[var(--orange)] text-xl no-underline">
-            <svg className="w-[28px] h-[22px]" viewBox="0 0 28 22" fill="none"><rect x={0} y={2} width={12} height={18} rx={2} fill="var(--orange)" /><rect x={4} y={0} width={12} height={18} rx={2} fill="var(--orange)" opacity=".5" /><rect x={14} y={4} width={14} height={14} rx={2} fill="var(--orange)" opacity=".8" /></svg>
-            <span className="font-serif text-[18px] font-bold tracking-[-0.3px]">SwarnPublication</span>
+          <Link href="/" className="flex items-center gap-3 no-underline h-full">
+            {/* Logo: swap src below when you have a real logo file */}
+            <div className="relative h-[42px] w-[42px] shrink-0">
+              <img
+                src="/images/authors/logo.png"
+                alt="Swapan Publication Logo"
+                className="h-[42px] w-[42px] rounded-full object-cover"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex'; }}
+              />
+              <div className="h-[42px] w-[42px] rounded-full bg-gradient-to-br from-[#0EA5A4] to-[#0077b5] items-center justify-center text-white font-bold text-base hidden absolute top-0 left-0" style={{ display: 'none' }}>
+                SP
+              </div>
+            </div>
+            <span className="font-serif text-[18px] font-bold tracking-tight text-[#19344f] dark:text-white">Swapan Publication</span>
           </Link>
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-[2rem]">
-            <Link href="/browse" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Journals & Books</Link>
-            <Link href="/search" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Search</Link>
+            <div className="relative group">
+              <button className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium flex items-center gap-1 h-[40px]">
+                Publications <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              <div className="absolute top-[35px] left-0 w-56 bg-white dark:bg-[#1E293B] shadow-lg rounded-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all flex flex-col p-2 border border-gray-100 dark:border-gray-800">
+                <Link href="/browse" className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors">Journals & Books</Link>
+                <Link href="/publish-guidelines" className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors">Publishing Guidelines</Link>
+              </div>
+            </div>
             <Link href="/about" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">About</Link>
-            <Link href="/guidelines" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Publishing Guidelines</Link>
             <Link href="/membership" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Membership</Link>
             <Link href="/contact" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Contact Us</Link>
           </div>
@@ -45,14 +62,16 @@ export default function Navbar() {
                 {user?.role === 'admin' && (
                   <Link href="/admin" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Admin</Link>
                 )}
-                <button onClick={handleLogout} className="flex items-center gap-1 text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-[14px] font-medium transition-colors">
-                  <LogOut className="w-4 h-4" /> Sign out
+                <button onClick={handleLogout} className="flex items-center justify-center bg-[#19344f] dark:bg-white text-white dark:text-[#19344f] px-3.5 py-1 rounded-md text-[12px] font-bold hover:opacity-90 transition-opacity">
+                  Sign out
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-4 border-l border-[var(--nav-border)] pl-4 ml-2">
-                <Link href="/signup" className="px-[18px] py-[7px] border border-[var(--btn-ghost-border)] rounded-md bg-transparent text-[var(--btn-ghost-text)] text-[13.5px] font-medium transition-all hover:border-[var(--btn-ghost-hover-border)] hover:text-[var(--btn-ghost-hover-text)]">Register</Link>
-                <Link href="/login" className="px-[20px] py-[7px] rounded-md bg-[var(--btn-solid-bg)] text-[var(--btn-solid-text)] text-[13.5px] font-medium transition-colors hover:bg-[var(--btn-solid-hover)]">Sign In</Link>
+                <Link href="/signup" className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] transition-colors text-[14px] font-medium">Register</Link>
+                <Link href="/login" className="flex items-center justify-center bg-[#19344f] dark:bg-white text-white dark:text-[#19344f] px-3.5 py-1 rounded-md text-[12px] font-bold hover:opacity-90 transition-opacity">
+                  Sign In
+                </Link>
               </div>
             )}
           </div>
@@ -71,14 +90,13 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden bg-[var(--nav-bg)] border-t border-[var(--nav-border)] px-4 py-4 flex flex-col gap-4 shadow-md">
           <Link href="/browse" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Journals & Books</Link>
-          <Link href="/search" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Search</Link>
           <Link href="/about" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">About</Link>
-          <Link href="/guidelines" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Publishing Guidelines</Link>
+          <Link href="/publish-guidelines" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Publishing Guidelines</Link>
           <Link href="/membership" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Membership</Link>
           <Link href="/contact" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Contact Us</Link>
-          
+
           <div className="border-t border-[var(--nav-border)] my-2"></div>
-          
+
           {isAuthenticated ? (
             <>
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-[var(--nav-link)] hover:text-[var(--nav-link-hover)] text-sm font-medium">Dashboard</Link>

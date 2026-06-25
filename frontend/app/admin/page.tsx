@@ -1,6 +1,6 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { Users, BookOpen, CheckCircle, Clock, Send, XCircle, FileText } from 'lucide-react';
+import { Users, BookOpen, CheckCircle, Clock, Send, XCircle, FileText, IndianRupee, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 
@@ -11,6 +11,12 @@ interface AdminStats {
   underReview: number;
   submitted: number;
   rejected: number;
+  paymentPending: number;
+  paymentCompleted: number;
+  successfulPayments: number;
+  failedPayments: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
 }
 
 export default function AdminDashboardPage() {
@@ -27,6 +33,12 @@ export default function AdminDashboardPage() {
     underReview: 0,
     submitted: 0,
     rejected: 0,
+    paymentPending: 0,
+    paymentCompleted: 0,
+    successfulPayments: 0,
+    failedPayments: 0,
+    totalRevenue: 0,
+    monthlyRevenue: 0,
   };
 
   const statCards = [
@@ -78,6 +90,38 @@ export default function AdminDashboardPage() {
       border: 'border-red-200 dark:border-red-900/50',
       href: '/admin/papers?status=rejected',
     },
+    {
+      label: 'Awaiting Payment',
+      value: stats.paymentPending,
+      icon: Clock,
+      color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
+      border: 'border-orange-200 dark:border-orange-900/50',
+      href: '/admin/papers?status=payment_pending',
+    },
+    {
+      label: 'Successful Payments',
+      value: stats.successfulPayments,
+      icon: CreditCard,
+      color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+      border: 'border-emerald-200 dark:border-emerald-900/50',
+      href: '#',
+    },
+    {
+      label: 'Total Revenue',
+      value: `₹${stats.totalRevenue.toLocaleString()}`,
+      icon: IndianRupee,
+      color: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400',
+      border: 'border-teal-200 dark:border-teal-900/50',
+      href: '#',
+    },
+    {
+      label: 'Monthly Revenue',
+      value: `₹${stats.monthlyRevenue.toLocaleString()}`,
+      icon: IndianRupee,
+      color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+      border: 'border-cyan-200 dark:border-cyan-900/50',
+      href: '#',
+    },
   ];
 
   return (
@@ -97,14 +141,7 @@ export default function AdminDashboardPage() {
         </Link>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-32 bg-[#F1F5F9] dark:bg-[#1F2937] animate-pulse rounded-xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {statCards.map(({ label, value, icon: Icon, color, border, href }) => (
             <Link
               key={label}
@@ -125,7 +162,6 @@ export default function AdminDashboardPage() {
             </Link>
           ))}
         </div>
-      )}
 
       {/* Quick actions */}
       <div className="mt-10 bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
@@ -140,8 +176,14 @@ export default function AdminDashboardPage() {
           <Link href="/admin/users" className="px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
             Manage Users
           </Link>
+          <Link href="/admin/papers?status=pre_proof" className="px-4 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors">
+            Awaiting Proof Approval
+          </Link>
+          <Link href="/admin/papers?status=payment_pending" className="px-4 py-2 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors">
+            Awaiting Payment
+          </Link>
           <Link href="/admin/subjects" className="px-4 py-2 rounded-lg bg-[#0D7C66]/10 text-[#0D7C66] text-sm font-medium hover:bg-[#0D7C66]/20 transition-colors">
-            Manage Subjects
+            Manage Journals
           </Link>
         </div>
       </div>

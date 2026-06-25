@@ -15,11 +15,21 @@ interface CMSFormData {
         authors: number;
         institutions: number;
     };
+    requireMembershipForAllPapers: boolean;
+    enablePublicationPayment: boolean;
+    publicationFeeAmount: number;
+    publicationFeeCurrency: string;
+    razorpayKeyId: string;
+    razorpaySecretKey: string;
+    membershipFeeMonthly: number;
+    membershipFeeYearly: number;
+    membershipFeeLifetime: number;
 }
 
 export default function AdminCMSPage() {
     const queryClient = useQueryClient();
     const [featuredIds, setFeaturedIds] = useState<string[]>([]);
+    const [featuredJournalIds, setFeaturedJournalIds] = useState<string[]>([]);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const { data: cmsData } = useQuery({
@@ -30,6 +40,11 @@ export default function AdminCMSPage() {
     const { data: papersData } = useQuery({
         queryKey: ['admin', 'papers'],
         queryFn: async () => (await api.get('/api/admin/papers?status=published&limit=100')).data.data,
+    });
+
+    const { data: journalsData } = useQuery({
+        queryKey: ['admin', 'subjects'],
+        queryFn: async () => (await api.get('/api/subjects')).data.data,
     });
 
     const { register, handleSubmit, reset } = useForm<CMSFormData>();
@@ -43,9 +58,19 @@ export default function AdminCMSPage() {
                     papers: cmsData.value.stats?.papers || 0,
                     authors: cmsData.value.stats?.authors || 0,
                     institutions: cmsData.value.stats?.institutions || 0,
-                }
+                },
+                requireMembershipForAllPapers: cmsData.value.requireMembershipForAllPapers || false,
+                enablePublicationPayment: cmsData.value.enablePublicationPayment || false,
+                publicationFeeAmount: cmsData.value.publicationFeeAmount || 0,
+                publicationFeeCurrency: cmsData.value.publicationFeeCurrency || 'INR',
+                razorpayKeyId: cmsData.value.razorpayKeyId || '',
+                razorpaySecretKey: cmsData.value.razorpaySecretKey || '',
+                membershipFeeMonthly: cmsData.value.membershipFeeMonthly || 199,
+                membershipFeeYearly: cmsData.value.membershipFeeYearly || 1999,
+                membershipFeeLifetime: cmsData.value.membershipFeeLifetime || 9999,
             });
             setFeaturedIds(cmsData.value.featuredPaperIds?.map((p: any) => typeof p === 'string' ? p : p._id) || []);
+            setFeaturedJournalIds(cmsData.value.featuredJournalIds?.map((j: any) => typeof j === 'string' ? j : j._id) || []);
         }
     }, [cmsData, reset]);
 
@@ -63,7 +88,8 @@ export default function AdminCMSPage() {
     const onSubmit = (data: CMSFormData) => {
         updateMutation.mutate({
             ...data,
-            featuredPaperIds: featuredIds
+            featuredPaperIds: featuredIds,
+            featuredJournalIds: featuredJournalIds
         });
     };
 
@@ -79,11 +105,39 @@ export default function AdminCMSPage() {
         }
     };
 
+    const toggleFeaturedJournal = (id: string) => {
+        if (featuredJournalIds.includes(id)) {
+            setFeaturedJournalIds(prev => prev.filter(x => x !== id));
+        } else {
+            if (featuredJournalIds.length >= 10) {
+                alert('Maximum 10 featured journals allowed');
+                return;
+            }
+            setFeaturedJournalIds(prev => [...prev, id]);
+        }
+    };
+
     return (
         <div>
             <h1 className="font-serif text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-8">CMS Settings</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
+                <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
+                    <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-4 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">Global Access Settings</h2>
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            id="requireMembershipForAllPapers"
+                            {...register('requireMembershipForAllPapers')}
+                            className="w-5 h-5 text-[#0D7C66] rounded"
+                        />
+                        <Label htmlFor="requireMembershipForAllPapers" className="text-base cursor-pointer">
+                            Require Membership to view PDFs for ALL papers
+                        </Label>
+                    </div>
+                    <p className="text-xs text-[#64748B] mt-2 ml-8">If checked, no guests or non-member users will be able to read full PDFs across the entire platform.</p>
+                </div>
+
                 <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
                     <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-4 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">Hero Section</h2>
                     <div className="space-y-4">
@@ -117,6 +171,60 @@ export default function AdminCMSPage() {
                 </div>
 
                 <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
+                    <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-4 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">Publication Payment Settings</h2>
+                    
+                    <div className="flex items-center gap-3 mb-6">
+                        <input
+                            type="checkbox"
+                            id="enablePublicationPayment"
+                            {...register('enablePublicationPayment')}
+                            className="w-5 h-5 text-[#0D7C66] rounded"
+                        />
+                        <Label htmlFor="enablePublicationPayment" className="text-base cursor-pointer">
+                            Enable Razorpay Publication Payments
+                        </Label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <Label htmlFor="publicationFeeAmount">Publication Fee Amount</Label>
+                            <Input id="publicationFeeAmount" type="number" {...register('publicationFeeAmount', { valueAsNumber: true })} className="mt-1" />
+                        </div>
+                        <div>
+                            <Label htmlFor="publicationFeeCurrency">Currency</Label>
+                            <Input id="publicationFeeCurrency" {...register('publicationFeeCurrency')} placeholder="INR" className="mt-1" />
+                        </div>
+                        <div>
+                            <Label htmlFor="razorpayKeyId">Razorpay Key ID</Label>
+                            <Input id="razorpayKeyId" {...register('razorpayKeyId')} className="mt-1" />
+                        </div>
+                        <div>
+                            <Label htmlFor="razorpaySecretKey">Razorpay Secret Key</Label>
+                            <Input id="razorpaySecretKey" type="password" {...register('razorpaySecretKey')} className="mt-1" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
+                    <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-1 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">Membership Pricing</h2>
+                    <p className="text-xs text-[#64748B] mb-5">Set the prices shown on the /membership page. These amounts are in INR (₹) by default.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <Label htmlFor="membershipFeeMonthly">Monthly Plan (₹)</Label>
+                            <Input id="membershipFeeMonthly" type="number" {...register('membershipFeeMonthly', { valueAsNumber: true })} className="mt-1" />
+                        </div>
+                        <div>
+                            <Label htmlFor="membershipFeeYearly">Yearly Plan (₹)</Label>
+                            <Input id="membershipFeeYearly" type="number" {...register('membershipFeeYearly', { valueAsNumber: true })} className="mt-1" />
+                        </div>
+                        <div>
+                            <Label htmlFor="membershipFeeLifetime">Lifetime Plan (₹)</Label>
+                            <Input id="membershipFeeLifetime" type="number" {...register('membershipFeeLifetime', { valueAsNumber: true })} className="mt-1" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
                     <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-4 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">
                         Featured Papers (max 6)
                     </h2>
@@ -133,6 +241,26 @@ export default function AdminCMSPage() {
                             </label>
                         ))}
                         {!papersData?.length && <div className="p-4 text-sm text-[#64748B]">No published papers available to feature.</div>}
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6">
+                    <h2 className="font-bold text-lg text-[#0F172A] dark:text-[#F1F5F9] mb-4 border-b border-[#E2E8F0] dark:border-[#374151] pb-2">
+                        Featured Journals (max 10)
+                    </h2>
+                    <div className="max-h-60 overflow-y-auto border border-[#E2E8F0] dark:border-[#374151] rounded-lg">
+                        {journalsData?.map((j: any) => (
+                            <label key={j._id} className="flex items-center gap-3 p-3 hover:bg-[#F8FAFC] dark:hover:bg-[#111827] border-b border-[#E2E8F0] dark:border-[#374151] cursor-pointer last:border-0">
+                                <input
+                                    type="checkbox"
+                                    checked={featuredJournalIds.includes(j._id)}
+                                    onChange={() => toggleFeaturedJournal(j._id)}
+                                    className="w-4 h-4 text-[#0D7C66] rounded"
+                                />
+                                <span className="text-sm font-medium text-[#0F172A] dark:text-[#F1F5F9]">{j.name}</span>
+                            </label>
+                        ))}
+                        {!journalsData?.length && <div className="p-4 text-sm text-[#64748B]">No journals available to feature.</div>}
                     </div>
                 </div>
 

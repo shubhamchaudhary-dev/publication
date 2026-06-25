@@ -49,11 +49,7 @@ export default function SearchPage() {
             </div>
 
             <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-10">
-                {papersLoading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-                    </div>
-                ) : (!q && !subjectStr) ? (
+                {(!q && !subjectStr) ? (
                     <div className="text-center py-20">
                         <Search className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#64748B]" />
                         <p className="text-[#64748B] dark:text-[#94A3B8]">Enter a search term to find papers.</p>

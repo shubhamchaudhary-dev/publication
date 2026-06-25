@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, Shield } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, Shield, Mail, Megaphone, MessageSquare, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 
@@ -9,22 +9,26 @@ const items = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/papers', label: 'Papers', icon: FileText },
   { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/subjects', label: 'Subjects', icon: BookOpen },
+  { href: '/admin/subjects', label: 'Journals', icon: BookOpen },
+  { href: '/admin/inquiries', label: 'Contact Inquiries', icon: Mail },
+  { href: '/admin/subscribers', label: 'Subscribers', icon: Megaphone },
+  { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
+  { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   { href: '/admin/cms', label: 'CMS Settings', icon: Settings },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const isRootAdmin = !!user?.isRootAdmin;
 
   return (
-    <aside className="w-64 min-h-screen bg-[#1A3C5E] dark:bg-[#0D1B2E] flex flex-col">
+    <aside className={cn("w-64 min-h-screen bg-[#1A3C5E] dark:bg-[#0D1B2E] flex flex-col", className)}>
       <div className="p-6 border-b border-white/10">
         {/* Site logo link */}
         <Link href="/" className="flex items-center gap-2 text-white font-bold text-lg font-serif">
           <ChevronLeft className="w-4 h-4" />
-          SwarnPublication
+          SwapanPublication
         </Link>
 
         {/* Admin role badge */}

@@ -20,11 +20,26 @@ const authorSchema = z.object({
     designation: z.string().min(2, 'Designation is required'),
 });
 
+const reviewerSchema = z.object({
+    name: z.string().min(2, 'Name is required'),
+    designation: z.string().min(2, 'Designation is required'),
+    affiliation: z.string().min(2, 'Affiliation is required'),
+    email: z.string().email('Valid email is required'),
+    contact: z.string().min(5, 'Contact number is required'),
+    researchArea: z.string().min(2, 'Research area is required'),
+});
+
 const schema = z.object({
     correspondingEmail: z.string().email('Valid email is required'),
     title: z.string().min(5, 'Title is too short'),
     abstract: z.string().min(50, 'Abstract must be at least 50 characters'),
+    highlights: z.string().min(10, 'Highlights must be at least 10 characters'),
+    keywordsStr: z.string().refine(val => {
+        const arr = val.split(',').map(s => s.trim()).filter(Boolean);
+        return arr.length >= 6;
+    }, 'At least 6 keywords are required (separate with commas)'),
     authors: z.array(authorSchema).min(1, 'At least one author is required'),
+    reviewers: z.array(reviewerSchema).min(1, 'At least 1 reviewer is required').max(5, 'At most 5 reviewers are allowed'),
     subject: z.string().min(1, 'Please select a journal'),
     declaration: z.boolean().refine(val => val === true, {
         message: 'You must accept the submission declaration'
@@ -43,6 +58,7 @@ export default function SubmitPage() {
     const [file, setFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState('');
     const [submitError, setSubmitError] = useState('');
+    const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
 
     const { data: subjectsData } = useQuery<{ _id: string, name: string }[]>({
         queryKey: ['subjects'],
@@ -52,7 +68,12 @@ export default function SubmitPage() {
     const { register, control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
         defaultValues: {
+            keywordsStr: '',
+            highlights: '',
             authors: [{ name: '', email: '', contact: '', address: '', designation: '' }],
+            reviewers: [
+                { name: '', designation: '', affiliation: '', email: '', contact: '', researchArea: '' }
+            ],
             declaration: false
         }
     });
@@ -60,6 +81,11 @@ export default function SubmitPage() {
     const { fields, append, remove } = useFieldArray({
         control,
         name: "authors"
+    });
+
+    const { fields: reviewerFields, append: appendReviewer, remove: removeReviewer } = useFieldArray({
+        control,
+        name: "reviewers"
     });
 
     // Pre-fill if edit
@@ -97,9 +123,15 @@ export default function SubmitPage() {
 
     const onSubmit = async (data: FormData) => {
         setSubmitError('');
-        if (!editId && !file) {
-            setFileError('Manuscript file is required');
-            return;
+        if (!editId) {
+            if (!file) {
+                setFileError('Manuscript file is required');
+                return;
+            }
+            if (!coverLetterFile) {
+                setSubmitError('Cover Letter is required. Please attach a Word document.');
+                return;
+            }
         }
 
         try {
@@ -113,7 +145,10 @@ export default function SubmitPage() {
             let finalData: any = {
                 title: data.title,
                 abstract: finalAbstract,
+                highlights: data.highlights,
+                keywords: data.keywordsStr.split(',').map(s => s.trim()).filter(Boolean),
                 authors: combinedAuthors,
+                reviewers: data.reviewers,
                 subjectId: data.subject,
             };
 
@@ -126,6 +161,17 @@ export default function SubmitPage() {
                 });
                 const base64 = await toBase64(file);
                 finalData.pdfUrl = base64;
+            }
+
+            if (coverLetterFile) {
+                const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(f);
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = error => reject(error);
+                });
+                finalData.coverLetterUrl = await toBase64(coverLetterFile);
+                finalData.coverLetterName = coverLetterFile.name;
             }
 
             if (editId) {
@@ -184,6 +230,26 @@ export default function SubmitPage() {
                                     placeholder="Enter abstract..."
                                 />
                                 {errors.abstract && <p className="text-red-500 text-xs mt-1">{errors.abstract.message}</p>}
+                            </div>
+                            
+                            <div>
+                                <label className="block text-[14px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Highlights*</label>
+                                <textarea 
+                                    {...register('highlights')} 
+                                    className="w-full min-h-[100px] px-3 py-2 border border-[#CBD5E1] dark:border-[var(--border)] bg-white dark:bg-[var(--sand)] rounded-[4px] text-[15px] focus:outline-none focus:border-[#2563EB] dark:text-white"
+                                    placeholder="Enter highlights..."
+                                />
+                                {errors.highlights && <p className="text-red-500 text-xs mt-1">{errors.highlights.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-[14px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Keywords* <span className="font-normal text-[#64748B] dark:text-[#94A3B8] text-[12px]">(Min 6, separated by commas)</span></label>
+                                <input 
+                                    {...register('keywordsStr')} 
+                                    className="w-full h-11 px-3 py-2 border border-[#CBD5E1] dark:border-[var(--border)] bg-white dark:bg-[var(--sand)] rounded-[4px] text-[15px] focus:outline-none focus:border-[#2563EB] dark:text-white"
+                                    placeholder="e.g. machine learning, data mining, artificial intelligence, etc..."
+                                />
+                                {errors.keywordsStr && <p className="text-red-500 text-xs mt-1">{errors.keywordsStr.message}</p>}
                             </div>
                         </div>
 
@@ -266,6 +332,98 @@ export default function SubmitPage() {
                             </button>
                         </div>
 
+                        {/* Section 2.5: Reviewers Profiles */}
+                        <div>
+                            <h3 className="text-[18px] font-bold text-[#EF4444] dark:text-[#F87171] mb-4">List of Reviewers (Min 1 - 5)</h3>
+                            
+                            <div className="bg-[#F8FAFC] dark:bg-[var(--sand)] p-6 rounded-lg border border-[#E2E8F0] dark:border-[var(--border)] space-y-6">
+                                {reviewerFields.map((item, index) => (
+                                    <div key={item.id} className="relative bg-white dark:bg-[var(--paper)] p-5 rounded-md border border-[#CBD5E1] dark:border-[var(--border-light)] space-y-4">
+                                        {index > 0 && (
+                                            <button 
+                                                type="button" 
+                                                onClick={() => removeReviewer(index)}
+                                                className="absolute top-4 right-4 text-sm text-red-500 hover:underline font-medium"
+                                            >
+                                                Remove Reviewer
+                                            </button>
+                                        )}
+                                        
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Name*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.name` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Name"
+                                            />
+                                            {errors.reviewers?.[index]?.name && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.name?.message}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Designation*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.designation` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Designation"
+                                            />
+                                            {errors.reviewers?.[index]?.designation && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.designation?.message}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Affiliation*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.affiliation` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Affiliation"
+                                            />
+                                            {errors.reviewers?.[index]?.affiliation && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.affiliation?.message}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Email*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.email` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Email"
+                                            />
+                                            {errors.reviewers?.[index]?.email && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.email?.message}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Contact Number*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.contact` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Contact Number"
+                                            />
+                                            {errors.reviewers?.[index]?.contact && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.contact?.message}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[13.5px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">Reviewer {index + 1}: Research Area / Expertise*</label>
+                                            <input 
+                                                {...register(`reviewers.${index}.researchArea` as const)} 
+                                                className="w-full h-10 px-3 border border-[#CBD5E1] dark:border-[var(--border)] rounded-[4px] text-[14px] focus:outline-none focus:border-[#2563EB] bg-white dark:bg-transparent dark:text-white"
+                                                placeholder="Enter Reviewer's Research Area / Expertise"
+                                            />
+                                            {errors.reviewers?.[index]?.researchArea && <p className="text-red-500 text-xs mt-1">{errors.reviewers[index]?.researchArea?.message}</p>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {reviewerFields.length < 5 && (
+                                <button 
+                                    type="button" 
+                                    onClick={() => appendReviewer({ name: '', designation: '', affiliation: '', email: '', contact: '', researchArea: '' })}
+                                    className="mt-4 flex items-center gap-1 bg-[#16A34A] hover:bg-[#15803D] text-white px-4 py-2 rounded-[4px] text-[14px] font-bold transition-colors"
+                                >
+                                    <Plus className="w-4 h-4" /> Add Reviewer
+                                </button>
+                            )}
+                            {errors.reviewers?.root && <p className="text-red-500 text-sm mt-2">{errors.reviewers.root.message}</p>}
+                        </div>
+
                         {/* Section 3: Document Uploads */}
                         <div className="space-y-6 pt-4">
                             <div>
@@ -309,6 +467,35 @@ export default function SubmitPage() {
                                 </div>
                             )}
 
+                            {/* Cover Letter Upload */}
+                            {!editId && (
+                                <div>
+                                    <label className="block text-[14px] font-bold text-[#1E293B] dark:text-[#F8FAFC] mb-1">
+                                        Attach Cover Letter* <span className="font-normal text-[#64748B] dark:text-[#94A3B8] text-[12px]">(Word format .doc/.docx, required)</span>
+                                    </label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <input
+                                            type="file"
+                                            id="coverLetterUpload"
+                                            accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setCoverLetterFile(e.target.files[0]);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="coverLetterUpload" className="cursor-pointer bg-[#F1F5F9] dark:bg-[var(--sand)] border border-[#CBD5E1] dark:border-[var(--border)] hover:bg-[#E2E8F0] dark:hover:bg-[#333] px-3 py-1.5 text-[13px] text-[#475569] dark:text-[#cbd5e1] rounded-[4px] shadow-sm font-medium transition-colors">
+                                            Choose File
+                                        </label>
+                                        <span className="text-[13px] text-[#475569] dark:text-[#94A3B8]">
+                                            {coverLetterFile ? coverLetterFile.name : 'No file chosen'}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11.5px] text-[#94A3B8] mt-1">Upload your cover letter addressed to the Editor-in-Chief in Word format.</p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="flex items-start gap-2 cursor-pointer mt-6">
                                     <input 
@@ -317,8 +504,7 @@ export default function SubmitPage() {
                                         className="mt-[3px] w-4 h-4 cursor-pointer"
                                     />
                                     <div className="text-[13.5px] text-[#1E293B] dark:text-[#F8FAFC]">
-                                        Submission Declaration<br />
-                                        <a href="#" className="text-[#EA580C] dark:text-[#F97316] hover:underline font-medium">Read Declaration</a>
+                                        Submission Declaration — <a href="/declaration" target="_blank" rel="noopener noreferrer" className="text-[#EA580C] dark:text-[#F97316] hover:underline font-medium">Read Declaration</a>
                                     </div>
                                 </label>
                                 {errors.declaration && <p className="text-red-500 text-xs mt-1">{errors.declaration.message}</p>}

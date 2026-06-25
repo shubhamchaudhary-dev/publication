@@ -8,7 +8,8 @@ import User from '../models/User';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { blacklistToken } from '../utils/redis';
 import { createLoginLimiter, createRegisterLimiter } from '../middleware/rateLimit';
-import { generateOTP, sendOTPEmail } from '../utils/email';
+import crypto from 'crypto';
+import { generateOTP, sendOTPEmail, sendPasswordResetEmail } from '../utils/email';
 
 const router = Router();
 
@@ -248,7 +249,37 @@ router.get('/me', authenticate, (req: Request, res: Response): void => {
   const user = (req as AuthRequest).user!;
   res.json({
     success: true,
-    data: { id: user._id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, institution: user.institution, isRootAdmin: user.isRootAdmin },
+    data: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+      institution: user.institution,
+      isRootAdmin: user.isRootAdmin,
+      phone: user.phone,
+      dob: user.dob,
+      gender: user.gender,
+      department: user.department,
+      designation: user.designation,
+      fieldOfResearch: user.fieldOfResearch,
+      researchInterests: user.researchInterests,
+      highestQualification: user.highestQualification,
+      orcid: user.orcid,
+      googleScholar: user.googleScholar,
+      linkedin: user.linkedin,
+      bio: user.bio,
+      country: user.country,
+      state: user.state,
+      city: user.city,
+      availableAsReviewer: user.availableAsReviewer,
+      emailNotifications: user.emailNotifications,
+      newIssueAlerts: user.newIssueAlerts,
+      certificates: user.certificates,
+      hasMembership: user.hasMembership,
+      membershipPlan: user.membershipPlan,
+      membershipExpiresAt: user.membershipExpiresAt,
+    },
   });
 });
 
@@ -277,5 +308,92 @@ router.get(
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   }
 );
+
+// PUT /api/auth/update-password
+router.put('/update-password', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+      return;
+    }
+
+    const authReq = req as AuthRequest;
+    const user = await User.findById(authReq.user!._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ success: false, message: 'Email is required' });
+      return;
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Return success anyway to prevent email enumeration
+      res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+      return;
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    await user.save();
+
+    sendPasswordResetEmail(user.email, token).catch(e => console.error(e));
+
+    res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword || newPassword.length < 6) {
+      res.status(400).json({ success: false, message: 'Invalid data' });
+      return;
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      res.status(400).json({ success: false, message: 'Invalid or expired token' });
+      return;
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password has been reset' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 export default router;

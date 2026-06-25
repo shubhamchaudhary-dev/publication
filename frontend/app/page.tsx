@@ -1,11 +1,16 @@
 'use client';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import ThemeToggle from '@/components/ThemeToggle';
 import Navbar from '@/components/Navbar';
-import { Eye } from 'lucide-react';
+import Footer from '@/components/Footer';
+
+import AntigravityBackground from '@/components/AntigravityBackground';
+import FeaturedAuthors from '@/components/FeaturedAuthors';
+import FeaturedJournals from '@/components/FeaturedJournals';
+import { Eye, Download, Calendar } from 'lucide-react';
 
 interface Paper {
   _id: string;
@@ -16,10 +21,22 @@ interface Paper {
   downloads: number;
   slug: string;
   subject?: { name: string };
+  coverImage?: string;
+  keywords?: string[];
+  status?: string;
+  publishedAt?: string;
+  createdAt?: string;
 }
 
 export default function HomePage() {
   const router = useRouter();
+
+  // Newsletter state
+  const [email, setEmail] = React.useState('');
+  const [isSubscribing, setIsSubscribing] = React.useState(false);
+  const [subscribeMessage, setSubscribeMessage] = React.useState('');
+  const [subscribeError, setSubscribeError] = React.useState(false);
+
   const { data: popularPapers } = useQuery<{ data: Paper[] }>({
     queryKey: ['papers', 'home'],
     queryFn: async () => (await api.get('/api/papers?limit=6')).data,
@@ -32,7 +49,27 @@ export default function HomePage() {
 
   const papers = popularPapers?.data || [];
   const cmsConfig = cmsDataRaw?.data?.value || {};
-  const stats = cmsConfig.stats || { papers: 52400, authors: 18730, institutions: 1200 };
+  const stats = cmsConfig.stats || { papers: 19, authors: 5, institutions: 3 };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsSubscribing(true);
+    setSubscribeMessage('');
+    setSubscribeError(false);
+
+    try {
+      const res = await api.post('/api/subscribers', { email });
+      setSubscribeMessage(res.data.message || 'Successfully subscribed!');
+      setEmail('');
+    } catch (err: any) {
+      setSubscribeError(true);
+      setSubscribeMessage(err.response?.data?.error || 'Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   return (
     <>
@@ -43,44 +80,19 @@ export default function HomePage() {
 
         {/* HERO */}
         <section className="hero">
-          <div className="hero-inner">
-            <p className="hero-search-label">Search 50,000+ peer-reviewed articles</p>
-            <div className="hero-search-bar">
-              <input type="text" placeholder="Find articles, authors, journals…" />
-              <select>
-                <option>All Fields</option>
-                <option>Title</option>
-                <option>Author</option>
-                <option>Abstract</option>
-                <option>DOI</option>
-              </select>
-              <button onClick={() => router.push('/search')}>Search</button>
-            </div>
-            <div className="hero-tags">
-              <span style={{ fontSize: '12.5px', color: 'var(--ink-faint)' }}>Popular:</span>
-              <a className="hero-tag" href="#">Machine Learning</a>
-              <a className="hero-tag" href="#">Climate Science</a>
-              <a className="hero-tag" href="#">Quantum Computing</a>
-              <a className="hero-tag" href="#">Neuroscience</a>
-              <a className="hero-tag" href="#">Genomics</a>
-              <a className="hero-tag" href="#">Blockchain</a>
-            </div>
-            <Link href="/search" className="hero-adv">Advanced search options →</Link>
+          <AntigravityBackground />
+          <div className="hero-inner flex flex-col items-center justify-center text-center">
 
-            {/* SWARNSPACE BANNER */}
-            <div className="swarnspace-banner" style={{ marginTop: '0.5rem' }}>
-              <div className="swarnspace-banner-left">
-                <div className="swarnspace-kicker"><div className="swarnspace-kicker-dot"></div>SwarnSpace</div>
-                <h2>{cmsConfig.heroHeadline || 'Advancing Knowledge Through Open Research'}</h2>
-                <p>{cmsConfig.heroSubheadline || 'Discover, share, and explore peer-reviewed academic papers across all disciplines on a single open platform.'}</p>
-                <div className="banner-btns">
+            {/* SWAPANSPACE BANNER */}
+            <div className="swarnspace-banner" style={{ justifyContent: 'center', textAlign: 'center' }}>
+              <div className="swarnspace-banner-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div className="swarnspace-kicker" style={{ justifyContent: 'center', display: 'flex' }}><div className="swarnspace-kicker-dot"></div>SwapanSpace</div>
+                <h2 style={{ fontSize: '2.5rem', lineHeight: '1.2', margin: '1rem 0', color: '#19344f' }}>{cmsConfig.heroHeadline || 'Advancing Knowledge Through Open Research'}</h2>
+                <p style={{ maxWidth: '600px', margin: '0 auto 2rem' }}>{cmsConfig.heroSubheadline || 'Discover, share, and explore peer-reviewed academic papers across all disciplines on a single open platform.'}</p>
+                <div className="banner-btns" style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                   <button className="banner-btn-outline" onClick={() => router.push('/browse')}>Browse Papers →</button>
                   <button className="banner-btn-primary" onClick={() => router.push('/submit')}>Submit Research</button>
                 </div>
-              </div>
-              <div className="swarnspace-banner-right">
-                <p>Want a personal research feed?</p>
-                <button className="banner-try-btn">Try SwarnSpace ↗</button>
               </div>
             </div>
           </div>
@@ -95,63 +107,146 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* FEATURED AUTHORS & RESEARCHERS */}
+        <FeaturedAuthors />
+
         {/* FEATURED PAPERS */}
         <section className="section section-bg-white">
           <div className="section-inner">
             <div className="section-header">
-              <h2 className="section-title">Featured Papers</h2>
+              <h2 className="section-title">Trending Papers</h2>
               <Link href="/browse" className="view-all">View all →</Link>
             </div>
             <div className="papers-list">
               {cmsConfig.featuredPaperIds?.length > 0 ? cmsConfig.featuredPaperIds.map((paper: any) => (
                 <div className="acm-paper-card" key={paper._id} onClick={() => router.push(`/paper/${paper.slug}`)}>
-                  <div className="acm-paper-meta">
-                    <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
-                    <span className="acm-paper-date">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-                    <span className="acm-paper-status">{paper.status === 'published' ? 'Published' : 'Under Review'}</span>
+                  <div className="acm-paper-left">
+                    {paper.coverImage && (
+                      <img 
+                        src={paper.coverImage} 
+                        alt="Cover" 
+                        className="acm-paper-cover" 
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextEl = e.currentTarget.nextElementSibling;
+                          if (nextEl) (nextEl as HTMLElement).style.display = 'flex';
+                        }} 
+                      />
+                    )}
+                    <div className="acm-paper-cover-placeholder" style={{ display: paper.coverImage ? 'none' : 'flex' }}>
+                      <span>{paper.subject?.name?.[0] || 'R'}</span>
+                    </div>
                   </div>
-                  <div className="acm-paper-body">
+                  <div className="acm-paper-center">
+                    <div className="acm-paper-meta-top">
+                      <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
+                      <span className="acm-paper-status">{paper.status === 'published' ? 'Published' : 'Under Review'}</span>
+                    </div>
                     <div className="acm-paper-title">{paper.title}</div>
-                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
+                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.map((a: string) => a.split(' | ')[0].trim()).filter(Boolean).join(', ') : 'Unknown'}</div>
                     <div className="acm-paper-abstract">{paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}</div>
-                    <div className="acm-paper-footer">
-                      <span className="acm-stat">👁 {paper.views || 0} views</span>
-                      <span className="acm-stat">⬇ {paper.downloads || 0} downloads</span>
-                      <div style={{ marginLeft: 'auto' }}>
-                        <Link
-                          href={`/paper/${paper.slug}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="acm-view-btn"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> View
-                        </Link>
+                    {paper.keywords && paper.keywords.length > 0 && (
+                      <div className="acm-paper-keywords">
+                        {paper.keywords.map((kw: string, i: number) => (
+                          <span key={i} className="acm-paper-keyword">{kw}</span>
+                        ))}
                       </div>
+                    )}
+                  </div>
+                  <div className="acm-paper-right">
+                    <div className="acm-paper-stats-list">
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon view-icon"><Eye className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.views >= 1000 ? (paper.views/1000).toFixed(1) + 'K' : (paper.views || 0)}</span>
+                          <span className="acm-stat-lbl">Views</span>
+                        </div>
+                      </div>
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon download-icon"><Download className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.downloads >= 1000 ? (paper.downloads/1000).toFixed(1) + 'K' : (paper.downloads || 0)}</span>
+                          <span className="acm-stat-lbl">Downloads</span>
+                        </div>
+                      </div>
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon date-icon"><Calendar className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                          <span className="acm-stat-lbl">Published</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="acm-paper-actions">
+                      <Link
+                        href={`/paper/${paper.slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="acm-view-btn"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Read Paper
+                      </Link>
                     </div>
                   </div>
                 </div>
               )) : papers.length > 0 ? papers.map((paper: any) => (
                 <div className="acm-paper-card" key={paper._id} onClick={() => router.push(`/paper/${paper.slug}`)}>
-                  <div className="acm-paper-meta">
-                    <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
-                    <span className="acm-paper-date">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-                    <span className="acm-paper-status">Published</span>
-                  </div>
-                  <div className="acm-paper-body">
-                    <div className="acm-paper-title">{paper.title}</div>
-                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.join(', ') : 'Unknown'}</div>
-                    <div className="acm-paper-abstract">{paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}</div>
-                    <div className="acm-paper-footer">
-                      <span className="acm-stat">👁 {paper.views || 0} views</span>
-                      <span className="acm-stat">⬇ {paper.downloads || 0} downloads</span>
-                      <div style={{ marginLeft: 'auto' }}>
-                        <Link
-                          href={`/paper/${paper.slug}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="acm-view-btn"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> View
-                        </Link>
+                  <div className="acm-paper-left">
+                    {paper.coverImage ? (
+                      <img src={paper.coverImage} alt="Cover" className="acm-paper-cover" />
+                    ) : (
+                      <div className="acm-paper-cover-placeholder">
+                        <span>{paper.subject?.name?.[0] || 'R'}</span>
                       </div>
+                    )}
+                  </div>
+                  <div className="acm-paper-center">
+                    <div className="acm-paper-meta-top">
+                      <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
+                      <span className="acm-paper-status">Published</span>
+                    </div>
+                    <div className="acm-paper-title">{paper.title}</div>
+                    <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.map((a: string) => a.split(' | ')[0].trim()).filter(Boolean).join(', ') : 'Unknown'}</div>
+                    <div className="acm-paper-abstract">{paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}</div>
+                    {paper.keywords && paper.keywords.length > 0 && (
+                      <div className="acm-paper-keywords">
+                        {paper.keywords.map((kw: string, i: number) => (
+                          <span key={i} className="acm-paper-keyword">{kw}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="acm-paper-right">
+                    <div className="acm-paper-stats-list">
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon view-icon"><Eye className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.views >= 1000 ? (paper.views/1000).toFixed(1) + 'K' : (paper.views || 0)}</span>
+                          <span className="acm-stat-lbl">Views</span>
+                        </div>
+                      </div>
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon download-icon"><Download className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.downloads >= 1000 ? (paper.downloads/1000).toFixed(1) + 'K' : (paper.downloads || 0)}</span>
+                          <span className="acm-stat-lbl">Downloads</span>
+                        </div>
+                      </div>
+                      <div className="acm-stat-item">
+                        <div className="acm-stat-icon date-icon"><Calendar className="w-4 h-4"/></div>
+                        <div className="acm-stat-info">
+                          <span className="acm-stat-val">{paper.publishedAt ? new Date(paper.publishedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date(paper.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                          <span className="acm-stat-lbl">Published</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="acm-paper-actions">
+                      <Link
+                        href={`/paper/${paper.slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="acm-view-btn"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Read Paper
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -162,143 +257,115 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SUBJECT AREAS */}
+        {/* WHY CHOOSE */}
         <section className="section section-bg-sand">
           <div className="section-inner">
-            <div className="section-header">
-              <h2 className="section-title">Browse by Subject</h2>
-              <Link href="/browse" className="view-all">All subjects →</Link>
+            <div className="section-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <h2 className="section-title">Why Researchers Choose SwapanPublication</h2>
+              <p style={{ fontSize: '14.5px', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
+                Built for academic excellence — every feature designed around research integrity and global visibility.
+              </p>
             </div>
-            <div className="subjects-grid">
-              <a className="subject-card" href="#">
-                <div className="subject-icon">🧬</div>
-                <div className="subject-name">Life Sciences</div>
-                <div className="subject-count">8,420 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">💻</div>
-                <div className="subject-name">Computer Science</div>
-                <div className="subject-count">12,105 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">⚗️</div>
-                <div className="subject-name">Chemistry</div>
-                <div className="subject-count">5,680 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">🏥</div>
-                <div className="subject-name">Medicine &amp; Health</div>
-                <div className="subject-count">9,340 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">⚡</div>
-                <div className="subject-name">Engineering</div>
-                <div className="subject-count">7,890 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">🌍</div>
-                <div className="subject-name">Environmental Science</div>
-                <div className="subject-count">4,210 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">📐</div>
-                <div className="subject-name">Mathematics</div>
-                <div className="subject-count">3,540 papers</div>
-              </a>
-              <a className="subject-card" href="#">
-                <div className="subject-icon">🔭</div>
-                <div className="subject-name">Physics &amp; Astronomy</div>
-                <div className="subject-count">4,970 papers</div>
-              </a>
+            <div className="features-grid">
+
+              {/* 1 Peer Reviewed */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Peer Reviewed</div>
+                <div className="feature-desc">Rigorous expert review process ensuring research quality.</div>
+              </div>
+
+              {/* 2 Open Access */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Open Access</div>
+                <div className="feature-desc">Research accessible globally without restrictions.</div>
+              </div>
+
+              {/* 3 Fast Publishing */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Fast Publishing</div>
+                <div className="feature-desc">Streamlined workflow for quicker publication timelines.</div>
+              </div>
+
+              {/* 4 DOI Support */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                  </svg>
+                </div>
+                <div className="feature-title">DOI Support</div>
+                <div className="feature-desc">Permanent digital identifiers for every publication.</div>
+              </div>
+
+              {/* 5 Global Reach */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Global Reach</div>
+                <div className="feature-desc">Connect with researchers and institutions worldwide.</div>
+              </div>
+
+              {/* 6 Ethical Standards */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Ethical Standards</div>
+                <div className="feature-desc">Publication practices aligned with academic integrity.</div>
+              </div>
+
+              {/* 7 Expert Editors */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Expert Editors</div>
+                <div className="feature-desc">Experienced editorial board across multiple disciplines.</div>
+              </div>
+
+              {/* 8 Digital Archive */}
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
+                  </svg>
+                </div>
+                <div className="feature-title">Digital Archive</div>
+                <div className="feature-desc">Secure long-term preservation of published research.</div>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* TRENDING */}
-        <section className="section section-bg-white">
-          <div className="section-inner">
-            <div className="section-header">
-              <h2 className="section-title">Trending This Week</h2>
-              <a href="#" className="view-all">See all trends →</a>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
-              <div className="trending-list">
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">01</div>
-                  <div className="trending-content">
-                    <div className="trending-title">GPT-4 and Educational Assessment: A Systematic Review</div>
-                    <div className="trending-meta"><span>Priya Nair et al.</span><span>May 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 892</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">02</div>
-                  <div className="trending-content">
-                    <div className="trending-title">CRISPR-Cas9 Gene Editing in Rare Disease Therapy</div>
-                    <div className="trending-meta"><span>Dr. Ramesh Kumar</span><span>Apr 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 741</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">03</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Quantum Error Correction in Superconducting Qubits</div>
-                    <div className="trending-meta"><span>Anika Shah, D. Verma</span><span>Mar 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 634</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">04</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Solar Panel Efficiency with Perovskite Coating</div>
-                    <div className="trending-meta"><span>Sunita Rao, Ajay Mehta</span><span>Feb 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 518</span>
-                </a>
-              </div>
-              <div className="trending-list">
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">05</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Urban Air Quality Monitoring via IoT Sensor Networks</div>
-                    <div className="trending-meta"><span>Kiran Joshi</span><span>May 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 487</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">06</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Multi-Modal Federated Learning for Privacy Preservation</div>
-                    <div className="trending-meta"><span>Tanvi Desai et al.</span><span>Apr 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 402</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">07</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Gut Microbiome Dysbiosis and Type-2 Diabetes</div>
-                    <div className="trending-meta"><span>Dr. S. Iyer, P. Nanda</span><span>Mar 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 376</span>
-                </a>
-                <a className="trending-item" href="#">
-                  <div className="trending-rank">08</div>
-                  <div className="trending-content">
-                    <div className="trending-title">Structural Analysis of Graphene-based Nanocomposites</div>
-                    <div className="trending-meta"><span>Rohit Bansal</span><span>Jan 2025</span></div>
-                  </div>
-                  <span className="trending-downloads">↓ 318</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* HOW IT WORKS */}
         <section className="section section-bg-sand">
           <div className="section-inner">
             <div className="section-header" style={{ justifyContent: 'center', textAlign: 'center', display: 'block', marginBottom: '3rem' }}>
-              <h2 className="section-title">How SwarnPublication Works</h2>
+              <h2 className="section-title">How SwapanPublication Works</h2>
               <p style={{ color: 'var(--ink-muted)', marginTop: '.5rem', fontSize: '14.5px' }}>From submission to global discovery in four simple steps.</p>
             </div>
             <div className="steps-grid">
@@ -326,205 +393,42 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* JOURNALS SPOTLIGHT */}
-        <section className="section section-bg-white">
-          <div className="section-inner">
-            <div className="section-header">
-              <h2 className="section-title">Top Journals</h2>
-              <a href="#" className="view-all">All journals →</a>
-            </div>
-            <div className="journals-grid">
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#E1F5EE' }}>📗</div>
-                <div>
-                  <div className="journal-name">SwarnJournal of Engineering</div>
-                  <div className="journal-desc">Covers civil, mechanical, electrical, and computer engineering disciplines with rigorous peer review.</div>
-                  <div className="journal-articles">3,240 articles</div>
-                </div>
-              </a>
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#FEF3C7' }}>🔬</div>
-                <div>
-                  <div className="journal-name">SwarnMed Research Letters</div>
-                  <div className="journal-desc">Rapid communication of significant findings in clinical and basic medical sciences.</div>
-                  <div className="journal-articles">2,890 articles</div>
-                </div>
-              </a>
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#EDE9FE' }}>💡</div>
-                <div>
-                  <div className="journal-name">SwarnAI &amp; Computation</div>
-                  <div className="journal-desc">Focused on artificial intelligence, machine learning, algorithms, and computational theory.</div>
-                  <div className="journal-articles">4,110 articles</div>
-                </div>
-              </a>
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#FEE2E2' }}>🌱</div>
-                <div>
-                  <div className="journal-name">SwarnEnvironmental Studies</div>
-                  <div className="journal-desc">Interdisciplinary research on ecology, climate change, sustainability, and environmental policy.</div>
-                  <div className="journal-articles">1,780 articles</div>
-                </div>
-              </a>
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#DBEAFE' }}>⚗️</div>
-                <div>
-                  <div className="journal-name">SwarnPhysics &amp; Materials</div>
-                  <div className="journal-desc">Leading publications on condensed matter physics, nanomaterials, and photonics research.</div>
-                  <div className="journal-articles">2,340 articles</div>
-                </div>
-              </a>
-              <a className="journal-card" href="#">
-                <div className="journal-icon" style={{ background: '#FAECE7' }}>📊</div>
-                <div>
-                  <div className="journal-name">SwarnSocial Sciences Quarterly</div>
-                  <div className="journal-desc">Peer-reviewed research in economics, sociology, psychology, and public policy.</div>
-                  <div className="journal-articles">1,540 articles</div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* TESTIMONIALS */}
-        <section className="section section-bg-sand">
-          <div className="section-inner">
-            <div className="section-header" style={{ justifyContent: 'center', textAlign: 'center', display: 'block', marginBottom: '2rem' }}>
-              <h2 className="section-title">What Researchers Say</h2>
-              <p style={{ color: 'var(--ink-muted)', marginTop: '.5rem', fontSize: '14px' }}>Trusted by academics and scientists worldwide.</p>
-            </div>
-            <div className="testimonials-grid">
-              <div className="testimonial-card">
-                <div className="testimonial-stars">★★★★★</div>
-                <div className="testimonial-text">&quot;SwarnPublication made it incredibly easy to submit my thesis research. The peer review process was transparent and the feedback was genuinely helpful.&quot;</div>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar" style={{ background: 'var(--teal)' }}>PS</div>
-                  <div>
-                    <div className="testimonial-name">Prof. Priya Sharma</div>
-                    <div className="testimonial-role">IIT Delhi — Computer Science</div>
-                  </div>
-                </div>
-              </div>
-              <div className="testimonial-card">
-                <div className="testimonial-stars">★★★★★</div>
-                <div className="testimonial-text">&quot;The search functionality is outstanding. I can find relevant papers within seconds, filter by subject and year, and download PDFs instantly. Highly recommended.&quot;</div>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar" style={{ background: 'var(--orange)' }}>RK</div>
-                  <div>
-                    <div className="testimonial-name">Dr. Rajesh Kumar</div>
-                    <div className="testimonial-role">AIIMS Mumbai — Pathology</div>
-                  </div>
-                </div>
-              </div>
-              <div className="testimonial-card">
-                <div className="testimonial-stars">★★★★☆</div>
-                <div className="testimonial-text">&quot;As an independent researcher without institutional affiliation, having free open-access papers has been a game changer for my work in climate modeling.&quot;</div>
-                  <div className="testimonial-author">
-                  <div className="testimonial-avatar" style={{ background: '#7C3AED' }}>AM</div>
-                  <div>
-                    <div className="testimonial-name">Aisha Mansoor</div>
-                    <div className="testimonial-role">Independent Researcher — Climate Science</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* FEATURED JOURNALS */}
+        <FeaturedJournals />
 
         {/* NEWSLETTER */}
         <section className="newsletter-section">
-          <h2>Stay Updated with New Research</h2>
+          <h2 className="!text-white">Stay Updated with New Research</h2>
           <p>Get weekly digests of the most-downloaded papers in your field, plus calls for submissions and journal announcements.</p>
-          <div className="newsletter-form">
-            <input type="email" placeholder="your@email.com" />
-            <button>Subscribe</button>
-          </div>
+          <form onSubmit={handleSubscribe} className="newsletter-form">
+            <input 
+              type="email" 
+              placeholder="your@email.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isSubscribing}
+            />
+            <button type="submit" disabled={isSubscribing} className="disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]">
+              {isSubscribing ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : 'Subscribe'}
+            </button>
+          </form>
+          {subscribeMessage && (
+            <div className={`mt-4 text-sm font-medium ${subscribeError ? 'text-red-400' : 'text-green-400'}`}>
+              {subscribeMessage}
+            </div>
+          )}
           <p className="newsletter-note">No spam. Unsubscribe at any time. We respect your privacy.</p>
         </section>
 
 
-        {/* TRUSTED PARTNERS */}
-        <section className="section section-bg-sand">
-          <div className="section-inner">
-            <div className="divider-label">Trusted by institutions worldwide</div>
-            <div className="partners-row">
-              <div className="partner-pill">IIT Bombay</div>
-              <div className="partner-pill">University of Delhi</div>
-              <div className="partner-pill">AIIMS</div>
-              <div className="partner-pill">NIT Trichy</div>
-              <div className="partner-pill">TIFR</div>
-              <div className="partner-pill">IISc Bangalore</div>
-              <div className="partner-pill">Jadavpur University</div>
-              <div className="partner-pill">Panjab University</div>
-              <div className="partner-pill">Anna University</div>
-            </div>
-          </div>
-        </section>
 
-        {/* SUBMIT CTA */}
-        <div className="submit-cta">
-          <div className="submit-cta-inner">
-            <div>
-              <h2>Ready to Share Your Research?</h2>
-              <p>Join 18,000+ authors who have published on SwarnPublication. Fast submission, rigorous peer review, global visibility.</p>
-            </div>
-            <div className="submit-cta-actions">
-              <button className="cta-btn-sec">Learn About Submission</button>
-              <button className="cta-btn-main" onClick={() => router.push('/submit')}>Submit Your Paper →</button>
-            </div>
-          </div>
-        </div>
+
 
         {/* FOOTER */}
-        <footer>
-          <div className="footer-inner">
-            <div className="footer-grid">
-              <div>
-                <div className="footer-brand-name">SwarnPublication</div>
-                <div className="footer-tagline">Advancing knowledge through open, peer-reviewed research across all scientific disciplines.</div>
-                <div className="footer-social">
-                  <a href="#">𝕏</a>
-                  <a href="#">in</a>
-                  <a href="#">fb</a>
-                  <a href="#">yt</a>
-                </div>
-              </div>
-              <div className="footer-col">
-                <h4>About SwarnPublication</h4>
-                <a href="#">Help</a>
-                <a href="#">Online video tutorials</a>
-                <a href="#">Our mission</a>
-                <a href="#">Careers</a>
-                <a href="#">Press</a>
-              </div>
-              <div className="footer-col">
-                <h4>Explore SwarnPublication</h4>
-                <a href="#">Content syndication</a>
-                <a href="#">Create and manage alerts</a>
-                <a href="#">SwarnSpace</a>
-                <a href="#">Open Access policy</a>
-                <Link href="/submit">Submit Research</Link>
-              </div>
-              <div className="footer-col">
-                <h4>Explore Our Network</h4>
-                <a href="#">Swarn Connect</a>
-                <a href="#">Publish with Swarn</a>
-                <a href="#">Institutional access</a>
-                <a href="#">Author guidelines</a>
-                <a href="#">Reviewer portal</a>
-              </div>
-            </div>
-            <div className="footer-bottom">
-              <div className="footer-bottom-text">© 2025 SwarnPublication. All rights reserved.</div>
-              <div className="footer-bottom-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Use</a>
-                <a href="#">Cookie Settings</a>
-                <a href="#">Accessibility</a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <Footer />
 
       </div>
     </>

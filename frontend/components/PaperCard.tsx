@@ -17,6 +17,11 @@ export interface Paper {
   downloads: number;
   status: string;
   remarks?: string;
+  coverImage?: string;
+  keywords?: string[];
+  highlights?: string;
+  requiresMembership?: boolean;
+  reviewers?: any[];
   subject?: { name: string; slug: string } | string;
   createdBy?: { _id?: string; name: string; institution?: string } | string;
   publishedAt?: string;
@@ -61,7 +66,7 @@ export default function PaperCard({ paper, onBookmark, isBookmarked }: PaperCard
       {/* Body (Right) */}
       <div className="flex-1 flex flex-col">
         <Link href={`/paper/${paper.slug}`} onClick={(e) => e.stopPropagation()}>
-          <h3 className="font-serif text-[#0077b5] dark:text-[#5ab4e5] text-xl leading-snug font-medium mb-2 group-hover:underline">
+          <h3 className="font-serif text-[#0077b5] dark:text-[#5ab4e5] text-xl leading-snug font-medium mb-2 group-hover:underline break-words line-clamp-2">
             {paper.title}
           </h3>
         </Link>
@@ -70,7 +75,7 @@ export default function PaperCard({ paper, onBookmark, isBookmarked }: PaperCard
           {authorNames || 'Unknown Authors'}
         </p>
         
-        <p className="text-[13.5px] text-[#64748B] dark:text-[#94A3B8] leading-relaxed line-clamp-4 mb-4">
+        <p className="text-[13.5px] text-[#64748B] dark:text-[#94A3B8] leading-relaxed line-clamp-4 mb-4 break-words">
           {paper.abstract?.replace(/\[Corresponding Email:.*?\]\s*/gi, '').trim()}
         </p>
 
@@ -91,6 +96,8 @@ export default function PaperCard({ paper, onBookmark, isBookmarked }: PaperCard
             )}
             <Link
               href={`/paper/${paper.slug}`}
+              target="_blank"
+              rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 bg-[#0077b5] hover:bg-[#005e8e] text-white text-[13px] font-medium px-4 py-1.5 rounded transition-colors"
             >

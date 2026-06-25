@@ -1,8 +1,7 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
-  "/submit/page": "app/submit/page.js",
-  "/browse/page": "app/browse/page.js",
-  "/paper/[slug]/page": "app/paper/[slug]/page.js",
-  "/admin/papers/page": "app/admin/papers/page.js",
-  "/admin/page": "app/admin/page.js"
+  "/page": "app/page.js",
+  "/membership/page": "app/membership/page.js",
+  "/about/page": "app/about/page.js",
+  "/login/page": "app/login/page.js",
+  "/contact/page": "app/contact/page.js"
 }

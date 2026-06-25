@@ -7,7 +7,7 @@ function createStore() {
   if (!client || !isRedisConnected()) return undefined;
   try {
     return new RedisStore({
-      sendCommand: (...args: string[]) => client.call(...args) as Promise<unknown>,
+      sendCommand: (...args: string[]) => (client as any).call(...args),
     });
   } catch {
     return undefined;

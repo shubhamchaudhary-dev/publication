@@ -3,10 +3,12 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import User from '../models/User';
 import Paper from '../models/Paper';
+
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { requireRole } from '../middleware/requireRole';
 import { cacheDelPattern } from '../utils/redis';
 import { uploadBase64 } from '../utils/cloudinary';
+import Payment from '../models/Payment';
 
 const router = Router();
 
@@ -15,18 +17,37 @@ router.use(authenticate, requireRole('admin'));
 // GET /api/admin/stats
 router.get('/stats', async (_req: Request, res: Response): Promise<void> => {
   try {
-    const [totalUsers, totalPapers, published, underReview, submitted, rejected] = await Promise.all([
+    const [totalUsers, totalPapers, published, underReview, submitted, rejected, paymentPending, paymentCompleted] = await Promise.all([
       User.countDocuments(),
       Paper.countDocuments(),
       Paper.countDocuments({ status: 'published' }),
       Paper.countDocuments({ status: 'under_review' }),
       Paper.countDocuments({ status: 'submitted' }),
       Paper.countDocuments({ status: 'rejected' }),
+      Paper.countDocuments({ status: 'payment_pending' }),
+      Paper.countDocuments({ status: 'payment_completed' }),
     ]);
+
+    const successfulPayments = await Payment.countDocuments({ status: 'success' });
+    const failedPayments = await Payment.countDocuments({ status: 'failed' });
+    
+    // Revenue logic
+    const payments = await Payment.find({ status: 'success' });
+    const totalRevenue = payments.reduce((acc, curr) => acc + curr.amount, 0);
+    
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthlyRevenue = payments
+      .filter(p => p.paidAt && p.paidAt.getMonth() === currentMonth && p.paidAt.getFullYear() === currentYear)
+      .reduce((acc, curr) => acc + curr.amount, 0);
 
     res.json({
       success: true,
-      data: { totalUsers, totalPapers, published, underReview, submitted, rejected },
+      data: { 
+        totalUsers, totalPapers, published, underReview, submitted, rejected, 
+        paymentPending, paymentCompleted, successfulPayments, failedPayments,
+        totalRevenue, monthlyRevenue 
+      },
     });
   } catch {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -62,11 +83,51 @@ router.get('/papers', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// PUT /api/admin/papers/:id/membership
+router.put('/papers/:id/membership', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const schema = z.object({ requiresMembership: z.boolean() });
+    const { requiresMembership } = schema.parse(req.body);
+
+    const paper = await Paper.findById(req.params.id);
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+
+    paper.requiresMembership = requiresMembership;
+    await paper.save();
+    await cacheDelPattern('papers:*');
+
+    res.json({ success: true, data: paper });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: err.errors[0].message });
+      return;
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /api/admin/users
 router.get('/users', async (_req: Request, res: Response): Promise<void> => {
   try {
     const users = await User.find().select('-passwordHash').sort({ createdAt: -1 }).lean();
     res.json({ success: true, data: users });
+  } catch {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /api/admin/payments
+router.get('/payments', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const payments = await Payment.find()
+      .populate('authorId', 'name email')
+      .populate('paperId', 'title')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ success: true, data: payments });
   } catch {
     res.status(500).json({ success: false, message: 'Server error' });
   }
@@ -109,6 +170,84 @@ router.put('/users/:id/role', async (req: AuthRequest, res: Response): Promise<v
   }
 });
 
+// PUT /api/admin/users/:id/membership
+router.put('/users/:id/membership', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const schema = z.object({ hasMembership: z.boolean() });
+    const { hasMembership } = schema.parse(req.body);
+
+    const targetUser = await User.findById(req.params.id).select('-passwordHash');
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    targetUser.hasMembership = hasMembership;
+    await targetUser.save();
+
+    res.json({ success: true, data: targetUser });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: err.errors[0].message });
+      return;
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/admin/users/:id/certificates
+router.post('/users/:id/certificates', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const schema = z.object({
+      pdfBase64: z.string().min(1, 'PDF file is required'),
+      fileName: z.string().min(1, 'File name is required'),
+      note: z.string().optional(),
+    });
+    const { pdfBase64, fileName, note } = schema.parse(req.body);
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    // Upload to Cloudinary
+    let fileUrl: string;
+    try {
+      fileUrl = await uploadBase64(pdfBase64, 'swarnpublication/certificates', 'raw');
+    } catch (cloudErr: any) {
+      console.error('[Certificate Upload] Cloudinary error:', cloudErr?.message || cloudErr);
+      res.status(500).json({ success: false, message: `File upload failed: ${cloudErr?.message || 'Cloudinary error'}` });
+      return;
+    }
+
+    // Use $push for reliable subdocument insertion
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $push: {
+          certificates: {
+            fileUrl,
+            fileName,
+            note: note || '',
+            uploadedAt: new Date(),
+          }
+        }
+      },
+      { new: true, select: '-passwordHash' }
+    );
+
+    res.json({ success: true, data: updatedUser });
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: err.errors[0].message });
+      return;
+    }
+    console.error('[Certificate Upload] Server error:', err?.message || err);
+    res.status(500).json({ success: false, message: err?.message || 'Server error' });
+  }
+});
+
 // DELETE /api/admin/users/:id
 router.delete('/users/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -143,7 +282,7 @@ router.delete('/users/:id', async (req: AuthRequest, res: Response): Promise<voi
 router.put('/papers/:id/review', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const schema = z.object({
-      status: z.enum(['submitted', 'under_review', 'rejected', 'published']),
+      status: z.enum(['submitted', 'under_review', 'rejected', 'accepted', 'pre_proof', 'awaiting_author_response', 'correction_requested', 'final_approval', 'payment_pending', 'payment_completed', 'published']),
       remarks: z.string().max(2000).optional(),
     });
     
@@ -200,6 +339,42 @@ router.post('/papers/:id/upload-pdf', async (req: AuthRequest, res: Response): P
   }
 });
 
+// POST /api/admin/papers/:id/cover
+// Upload a cover image graphic for the paper
+router.post('/papers/:id/cover', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { coverImageBase64 } = req.body;
+    if (!coverImageBase64) {
+      res.status(400).json({ success: false, message: 'coverImageBase64 is required' });
+      return;
+    }
+    
+    let fileUrl: string;
+    try {
+      fileUrl = await uploadBase64(coverImageBase64, 'swarnpublication/covers', 'image');
+    } catch (cloudErr: any) {
+      console.error('[Cover Upload] Cloudinary error:', cloudErr?.message || cloudErr);
+      res.status(500).json({ success: false, message: `File upload failed: ${cloudErr?.message || 'Cloudinary error'}` });
+      return;
+    }
+
+    const paper = await Paper.findByIdAndUpdate(
+      req.params.id,
+      { coverImage: fileUrl },
+      { new: true }
+    );
+    if (!paper) {
+      res.status(404).json({ success: false, message: 'Paper not found' });
+      return;
+    }
+
+    await cacheDelPattern('papers:*');
+    res.json({ success: true, data: { coverImage: fileUrl } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err?.message || 'Upload failed' });
+  }
+});
+
 // POST /api/admin/papers/:id/correction-file
 // Send correction files to paper author — non-published papers only.
 // Appends to existing correctionFiles (does NOT replace). Each image batch ≤ 5.
@@ -251,5 +426,7 @@ router.post('/papers/:id/correction-file', async (req: AuthRequest, res: Respons
     res.status(500).json({ success: false, message: err?.message || 'Upload failed' });
   }
 });
+
+
 
 export default router;
