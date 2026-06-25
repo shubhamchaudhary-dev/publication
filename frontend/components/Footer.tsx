@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-white dark:bg-[#0A0F1C] mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <h3 className="text-[#0A0F1C] dark:text-white text-base font-medium mb-2">About SwapanPublication</h3>

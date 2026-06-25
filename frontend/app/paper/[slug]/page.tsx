@@ -124,7 +124,7 @@ export default function PaperDetailPage({ params }: { params: { slug: string } }
                 <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-12 flex justify-center items-center">
                     <div className="w-12 h-12 border-4 border-[#0D7C66] border-t-transparent rounded-full animate-spin"></div>
                 </main>
-                <Footer />
+                
             </div>
         );
     }
@@ -136,7 +136,7 @@ export default function PaperDetailPage({ params }: { params: { slug: string } }
                 <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-12 flex justify-center items-center">
                     <p className="text-[#64748B] dark:text-[#94A3B8]">Paper not found.</p>
                 </main>
-                <Footer />
+                
             </div>
         );
     }
@@ -331,7 +331,7 @@ export default function PaperDetailPage({ params }: { params: { slug: string } }
                 </aside>
             </main>
             
-            <Footer />
+            
 
             <style jsx global>{`
                 /* Copy protection */

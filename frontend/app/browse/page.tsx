@@ -411,7 +411,7 @@ export default function BrowsePage() {
                 </div>
                 </div> {/* end zoom wrapper */}
 
-                <Footer />
+                
             </div>
         );
     }
@@ -659,7 +659,7 @@ export default function BrowsePage() {
                 )}
             </div>
 
-            <Footer />
+            
             </div>
         </div>
     );

@@ -208,7 +208,6 @@ export default function DeclarationPage() {
 
             </main>
 
-            <Footer />
-        </div>
+                    </div>
     );
 }

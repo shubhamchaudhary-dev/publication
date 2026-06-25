@@ -240,7 +240,7 @@ export default function AdminPapersPage() {
                                                 ? 'bg-green-600 hover:bg-green-700 text-white'
                                                 : 'bg-blue-600 hover:bg-blue-700 text-white'
                                             }>
-                                                {p.status === 'published' ? 'Upload PDF' : 'Review'}
+                                                {p.status === 'published' ? 'Actions' : 'Review'}
                                             </Button>
                                             <Button size="sm" variant="destructive" onClick={() => { if (confirm('Delete this paper forever?')) deleteMutation.mutate(p._id); }} className="p-2">
                                                 <Trash2 className="w-4 h-4" />
