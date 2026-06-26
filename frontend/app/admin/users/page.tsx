@@ -111,8 +111,8 @@ export default function AdminUsersPage() {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-8">
-                <h1 className="font-serif text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9]">Manage Users</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9]">Manage Users</h1>
                 {!amIRootAdmin && (
                     <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 rounded-lg">
                         ⚠ Only the Root Admin can assign or remove admin roles

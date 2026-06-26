@@ -168,12 +168,12 @@ export default function AdminPapersPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="font-serif text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9]">Manage Papers</h1>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9]">Manage Papers</h1>
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-[#E2E8F0] dark:border-[#374151] rounded-lg px-4 py-2 bg-white dark:bg-[#1F2937] text-sm font-medium text-[#0F172A] dark:text-[#F1F5F9]"
+                    className="border border-[#E2E8F0] dark:border-[#374151] rounded-lg px-4 py-2 bg-white dark:bg-[#1F2937] text-sm font-medium text-[#0F172A] dark:text-[#F1F5F9] w-full sm:w-auto min-h-[44px]"
                 >
                     <option value="all">All Statuses</option>
                     <option value="submitted">Submitted</option>

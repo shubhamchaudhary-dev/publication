@@ -128,7 +128,7 @@ export default function AdminSubjectsPage() {
 
     return (
         <div>
-            <h1 className="font-serif text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-8">Manage Journals</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-6 sm:mb-8">Manage Journals</h1>
 
             <div className="bg-white dark:bg-[#1F2937] rounded-xl border border-[#E2E8F0] dark:border-[#374151] p-6 mb-8">
                 <h2 className="font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-4">

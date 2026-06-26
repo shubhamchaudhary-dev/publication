@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -150,6 +150,14 @@ const JOURNAL_DESCRIPTIONS: Record<string, string> = {};
 const JOURNAL_COLORS: Record<string, string> = {};
 
 export default function BrowsePage() {
+    return (
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <BrowseContent />
+        </React.Suspense>
+    );
+}
+
+function BrowseContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const subjectSlug = searchParams.get('subject') || '';
@@ -214,7 +222,6 @@ export default function BrowsePage() {
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
                         borderBottom: '1px solid #243f60',
-                        zoom: 0.80,
                     }}
                 >
                     <div className="max-w-5xl mx-auto">
@@ -249,8 +256,8 @@ export default function BrowsePage() {
                     </div>
                 </div>
 
-                {/* Content - slightly zoomed in */}
-                <div style={{ zoom: 0.90 }} className="flex-1 flex flex-col w-full">
+                {/* Content */}
+                <div className="flex-1 flex flex-col w-full">
 
                 {/* Breadcrumb */}
                 <div className="max-w-5xl mx-auto w-full px-4 pt-4 pb-1">
@@ -421,10 +428,10 @@ export default function BrowsePage() {
         <div className="min-h-screen flex flex-col">
             <Navbar />
             
-            <div style={{ zoom: 0.80 }} className="flex-1 flex flex-col w-full">
+            <div className="flex-1 flex flex-col w-full">
             {/* Journal Header Banner */}
             <div
-                className="py-10 px-6 relative"
+                className="journal-banner py-10 px-6 relative"
                 style={{
                     backgroundImage: journalData.bannerImage
                         ? `linear-gradient(to right, rgba(74, 26, 92, 0.5) 0%, rgba(74, 26, 92, 0.6) 100%), url(${journalData.bannerImage})`
@@ -448,7 +455,7 @@ export default function BrowsePage() {
                             Switch Journal <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
                         {dropdownOpen && (
-                            <div className="absolute right-0 top-full mt-2 w-56 bg-[#1a2d42] border border-white/20 rounded-lg shadow-2xl z-50 overflow-hidden">
+                            <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-56 bg-[#1a2d42] border border-white/20 rounded-lg shadow-2xl z-50 overflow-hidden">
                                 <button
                                     onClick={() => { setDropdownOpen(false); router.push('/browse'); }}
                                     className="w-full text-left px-4 py-3 text-sm text-[#94C8E0] hover:bg-white/10 border-b border-white/10"
@@ -481,7 +488,7 @@ export default function BrowsePage() {
                                 <div className="w-1 h-5 bg-[#0077b5] rounded-full"></div>
                                 About the Journal
                             </h2>
-                            <div className="text-[#475569] dark:text-[#94A3B8] leading-relaxed mb-5 whitespace-pre-line">{journalDesc}</div>
+                            <div className="text-[#475569] dark:text-[#94A3B8] leading-relaxed mb-5 whitespace-pre-line text-justify">{journalDesc}</div>
 
                             {journalData.scope && (
                                 <div className="mb-6">

@@ -54,7 +54,7 @@ export default function PublishGuidelines() {
 
           {/* Main Content */}
           <div className="flex-1 min-w-0 pb-20">
-            <div className="space-y-12 text-[15px] leading-[1.65] text-[#333] dark:text-[#CBD5E1]">
+            <div className="space-y-12 text-[15px] leading-[1.65] text-[#333] dark:text-[#CBD5E1] text-justify">
               
               <section id="full-length">
                 <h2 className="text-[22px] font-bold text-[#333] dark:text-white mb-4 pb-2 border-b border-[#DDD] dark:border-[#334155]">Full-length research article</h2>

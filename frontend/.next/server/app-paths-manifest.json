@@ -1,8 +1,0 @@
-{
-  "/submit/page": "app/submit/page.js",
-  "/page": "app/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/papers/page": "app/admin/papers/page.js",
-  "/admin/cms/page": "app/admin/cms/page.js"
-}

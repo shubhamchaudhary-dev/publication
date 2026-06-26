@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </head>
-      <body className="min-h-screen bg-gradient-to-br from-[#FFFBEA]/50 to-[#FFFFFF] dark:bg-gradient-to-b dark:from-[#111111] dark:to-black text-[#0F172A] dark:text-[#F1F5F9]">
+      <body className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#FFFBEA]/50 to-[#FFFFFF] dark:bg-gradient-to-b dark:from-[#111111] dark:to-black text-[#0F172A] dark:text-[#F1F5F9]">
         <QueryProvider>
           <ThemeProvider>
             <AuthInit />

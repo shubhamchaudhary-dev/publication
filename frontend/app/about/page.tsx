@@ -52,7 +52,7 @@ export default function AboutPage() {
         <div className="min-h-screen flex flex-col bg-[#fafaf9] dark:bg-[#0A0F1C] font-sans">
             <Navbar />
             
-            <div style={{ zoom: 0.90 }} className="flex-1 flex flex-col w-full">
+            <div className="flex-1 flex flex-col w-full">
                 {/* Hero Section */}
                 <div className="bg-gradient-to-r from-[#e0f2fe] via-[#f0f9ff] to-[#e0f2fe] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#0f172a] relative overflow-hidden py-16 md:py-24">
                     <div className="absolute inset-0 opacity-[0.03] dark:opacity-10" style={{ backgroundImage: 'radial-gradient(#000000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
@@ -107,7 +107,7 @@ export default function AboutPage() {
                                 <Target className="w-8 h-8 text-[#0055A4] dark:text-[#3b82f6]" />
                                 <h2 className="text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] m-0">Our Mission</h2>
                             </div>
-                            <div className="prose dark:prose-invert text-[#475569] dark:text-[#94A3B8] leading-loose">
+                            <div className="prose dark:prose-invert text-[#475569] dark:text-[#94A3B8] leading-loose text-justify">
                                 <p className="mb-4 text-base">
                                     SwapanPublication publishes a growing collection of peer-reviewed academic journals spanning multiple disciplines including Social Sciences, Humanities, Engineering, and Applied Sciences. 
                                 </p>

@@ -63,7 +63,7 @@ export default function ContactPage() {
         <div className="min-h-screen flex flex-col bg-[#fafaf9] dark:bg-[#0A0F1C] font-sans">
             <Navbar />
             
-            <div style={{ zoom: 0.90 }} className="flex-1 flex flex-col w-full">
+            <div className="flex-1 flex flex-col w-full">
                 {/* Hero Section */}
                 <div className="bg-gradient-to-r from-[#e0f2fe] via-[#f0f9ff] to-[#e0f2fe] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#0f172a] relative overflow-hidden py-16 md:py-24">
                 <div className="absolute inset-0 opacity-[0.03] dark:opacity-10" style={{ backgroundImage: 'radial-gradient(#000000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
@@ -76,7 +76,7 @@ export default function ContactPage() {
                         <h1 className="text-3xl md:text-4xl font-bold text-[#0F172A] dark:text-white mb-6 tracking-tight">
                             Contact Swapan Publication
                         </h1>
-                        <p className="text-base text-[#475569] dark:text-[#94a3b8] leading-relaxed max-w-md">
+                        <p className="text-base text-[#475569] dark:text-[#94a3b8] leading-relaxed max-w-md text-justify">
                             We're here to help! Reach out to us for any queries related to submissions, memberships, partnerships, or general inquiries.
                         </p>
                     </div>
@@ -120,7 +120,7 @@ export default function ContactPage() {
                         <div>
                             <h2 className="text-2xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-4">Contact Information</h2>
                             <div className="h-1 w-12 bg-[#0055A4] rounded-full mb-6"></div>
-                            <p className="text-[#475569] dark:text-[#94A3B8] leading-relaxed mb-8">
+                            <p className="text-[#475569] dark:text-[#94A3B8] leading-relaxed mb-8 text-justify">
                                 Whether you have a question about submitting a manuscript, joining our editorial board, or general publication queries, our team is ready to assist you.
                             </p>
                         </div>
@@ -133,7 +133,7 @@ export default function ContactPage() {
                             <div>
                                 <h3 className="font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-1">Email Us</h3>
                                 <p className="text-[#64748B] text-sm mb-1">Our friendly team is here to help.</p>
-                                <a href="mailto:swapanpublication@gmail.com" className="text-[#0D7C66] dark:text-[#2dd4bf] font-bold text-sm hover:underline">
+                                <a href="mailto:swapanpublication@gmail.com" className="text-[#0D7C66] dark:text-[#2dd4bf] font-bold text-sm hover:underline break-all">
                                     swapanpublication@gmail.com
                                 </a>
                             </div>

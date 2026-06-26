@@ -120,7 +120,7 @@ export default function MembershipPage() {
         <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] font-sans">
             <Navbar />
             
-            <div style={{ zoom: 0.90 }} className="flex-1 flex flex-col w-full">
+            <div className="flex-1 flex flex-col w-full">
                 <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl md:text-3xl font-bold text-[#0F172A] dark:text-white mb-3 font-serif">
@@ -300,7 +300,7 @@ export default function MembershipPage() {
                             <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] dark:text-white mb-2 flex items-center gap-2">
                                 <Zap className="w-4 h-4" /> Important Note
                             </h3>
-                            <p className="text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
+                            <p className="text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed text-justify">
                                 Membership provides access to exclusive benefits and services. Membership does <strong>not</strong> guarantee manuscript acceptance, publication, indexing, or inclusion in any external database. All submissions are subject to the standard editorial and review process.
                             </p>
                         </section>

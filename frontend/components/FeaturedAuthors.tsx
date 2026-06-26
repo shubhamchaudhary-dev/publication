@@ -73,7 +73,7 @@ export default function FeaturedAuthors() {
       <div className="section-inner">
         <div className="section-header" style={{ justifyContent: 'center', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2 className="section-title">Authors & Researchers</h2>
-          <p style={{ color: 'var(--ink-muted)', marginTop: '.5rem', fontSize: '14.5px', maxWidth: '600px' }}>
+          <p style={{ color: 'var(--ink-muted)', marginTop: '.5rem', fontSize: '14.5px', maxWidth: '600px', padding: '0 1rem' }}>
             Meet the distinguished academic minds and editorial leaders driving research excellence on SwapanPublication.
           </p>
         </div>

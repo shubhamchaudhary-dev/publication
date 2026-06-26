@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, Shield, Mail, Megaphone, MessageSquare, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookOpen, Settings, ChevronLeft, Shield, Mail, Megaphone, MessageSquare, CreditCard, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 
@@ -17,19 +17,37 @@ const items = [
   { href: '/admin/cms', label: 'CMS Settings', icon: Settings },
 ];
 
-export default function AdminSidebar({ className }: { className?: string }) {
+interface AdminSidebarProps {
+  className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function AdminSidebar({ className, isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const isRootAdmin = !!user?.isRootAdmin;
 
-  return (
+  const sidebarContent = (
     <aside className={cn("w-64 min-h-screen bg-[#1A3C5E] dark:bg-[#0D1B2E] flex flex-col", className)}>
       <div className="p-6 border-b border-white/10">
         {/* Site logo link */}
-        <Link href="/" className="flex items-center gap-2 text-white font-bold text-lg font-serif">
-          <ChevronLeft className="w-4 h-4" />
-          SwapanPublication
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-white font-bold text-lg font-serif">
+            <ChevronLeft className="w-4 h-4" />
+            SwapanPublication
+          </Link>
+          {/* Close button — only shown on mobile drawer */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1.5 text-white/60 hover:text-white rounded-md min-w-[36px] min-h-[36px] flex items-center justify-center"
+              aria-label="Close sidebar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
         {/* Admin role badge */}
         <div className="mt-4 flex items-center gap-3">
@@ -54,18 +72,46 @@ export default function AdminSidebar({ className }: { className?: string }) {
           <Link
             key={href}
             href={href}
+            onClick={onClose}
             className={cn(
-              'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
+              'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
               pathname === href
                 ? 'bg-[#0D7C66] text-white'
                 : 'text-white/70 hover:text-white hover:bg-white/10'
             )}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
             {label}
           </Link>
         ))}
       </nav>
     </aside>
   );
+
+  return (
+    <>
+      {/* Desktop: always visible */}
+      <div className="hidden lg:block">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile: off-canvas drawer */}
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/50"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          {/* Drawer */}
+          <div className="lg:hidden fixed inset-y-0 left-0 z-50 flex">
+            {sidebarContent}
+          </div>
+        </>
+      )}
+    </>
+  );
 }
+
+

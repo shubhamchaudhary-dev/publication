@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -49,6 +49,14 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function SubmitPage() {
+    return (
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading form...</div>}>
+            <SubmitContent />
+        </React.Suspense>
+    );
+}
+
+function SubmitContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editId = searchParams.get('edit');
