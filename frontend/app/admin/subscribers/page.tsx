@@ -49,18 +49,18 @@ export default function AdminSubscribersPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-2 flex items-center gap-3">
-                        <Megaphone className="w-8 h-8 text-[#0055A4]" />
-                        Newsletter Subscribers
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-2 flex items-center gap-3">
+                        <Megaphone className="w-6 h-6 sm:w-8 sm:h-8 text-[#0055A4] shrink-0" />
+                        <span className="break-words">Newsletter Subscribers</span>
                     </h1>
-                    <p className="text-[#64748B]">Manage your mailing list for research updates and announcements.</p>
+                    <p className="text-[#64748B] text-sm sm:text-base">Manage your mailing list for research updates and announcements.</p>
                 </div>
                 <Button 
                     onClick={exportToCSV}
                     disabled={!subscribers || subscribers.length === 0}
-                    className="bg-[#0055A4] hover:bg-[#004080] text-white"
+                    className="bg-[#0055A4] hover:bg-[#004080] text-white shrink-0"
                 >
                     <Download className="w-4 h-4 mr-2" />
                     Export CSV

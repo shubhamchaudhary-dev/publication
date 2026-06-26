@@ -351,9 +351,36 @@ export default function DashboardPage() {
         <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A]">
             <Navbar />
 
-            <div className="flex-1 w-[95%] max-w-[1400px] mx-auto py-6 flex flex-col lg:flex-row gap-6 transform scale-[0.90] origin-top">
-                {/* Premium Sidebar */}
-                <aside className="w-full lg:w-64 flex-shrink-0">
+            {/* Mobile: horizontal scrollable tab bar */}
+            <div className="lg:hidden w-full max-w-[100vw] overflow-x-auto bg-white dark:bg-[#1E293B] border-b border-gray-100 dark:border-white/5 shadow-sm">
+                <div className="flex items-center gap-1 px-3 py-2 min-w-max">
+                    {sidebarItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id as any)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap min-h-[40px] ${
+                                activeTab === item.id
+                                    ? 'bg-[#0EA5A4] text-white'
+                                    : 'text-[#64748B] dark:text-[#94A3B8] hover:bg-gray-100 dark:hover:bg-white/5'
+                            }`}
+                        >
+                            <item.icon className="w-3.5 h-3.5" aria-hidden="true" />
+                            {item.label}
+                        </button>
+                    ))}
+                    <button
+                        onClick={logout}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all whitespace-nowrap min-h-[40px]"
+                    >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex-1 w-full max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6 flex flex-col lg:flex-row gap-4 lg:gap-6">
+                {/* Premium Sidebar — desktop only */}
+                <aside className="hidden lg:block w-64 flex-shrink-0">
                     <div className="bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-xl rounded-2xl shadow-lg shadow-[#0F172A]/5 border border-white/20 dark:border-white/5 overflow-hidden sticky top-24">
                         <div className="px-5 pt-5 pb-4 text-center bg-gradient-to-b from-[#0EA5A4]/10 to-transparent">
                             <div className="w-20 h-20 rounded-full mx-auto mb-3 shadow-lg shadow-[#0EA5A4]/30 ring-4 ring-white dark:ring-[#1E293B] overflow-hidden shrink-0">
@@ -399,7 +426,7 @@ export default function DashboardPage() {
                 </aside>
 
                 {/* Main Content Area */}
-                <main className="flex-1">
+                <main className="flex-1 min-w-0">
                     {/* Top Welcome Banner */}
                     <div className="bg-gradient-to-br from-white via-[#F0FDFA] to-[#F0F9FF] dark:from-[#1E293B] dark:via-[#1E293B] dark:to-[#0F172A] rounded-2xl p-6 md:p-8 text-[#0F172A] dark:text-white shadow-sm border border-[#E2E8F0] dark:border-white/10 mb-6 relative overflow-hidden group">
                         <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#0EA5A4] rounded-full blur-[80px] opacity-[0.15] group-hover:opacity-25 transition-opacity duration-700 pointer-events-none"></div>
@@ -552,16 +579,16 @@ export default function DashboardPage() {
                                         <h3 className="text-base font-bold text-[#0F172A] dark:text-white mb-5 flex items-center gap-2">
                                             <Send className="w-4 h-4 text-[#0EA5A4]" /> Publication Pipeline
                                         </h3>
-                                        <div className="flex items-center justify-between relative">
-                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 dark:bg-white/5 -z-10 rounded-full"></div>
-                                            <div className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#0EA5A4] to-[#22C55E] -z-10 rounded-full transition-all duration-1000" style={{ width: `${(currentStageIndex / 4) * 100}%` }}></div>
+                                        <div className="flex items-center justify-between relative mt-2">
+                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 dark:bg-white/5 -z-10 rounded-full -translate-y-4 md:-translate-y-5"></div>
+                                            <div className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#0EA5A4] to-[#22C55E] -z-10 rounded-full transition-all duration-1000 -translate-y-4 md:-translate-y-5" style={{ width: `${(currentStageIndex / 4) * 100}%` }}></div>
                                             
                                             {['Submitted', 'Review', 'Proofing', 'Payment', 'Published'].map((stage, i) => (
-                                                <div key={i} className="flex flex-col items-center gap-3 bg-white dark:bg-[#1E293B] px-2">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-transform hover:scale-110 ${i <= currentStageIndex ? (i === 4 ? 'bg-[#22C55E] text-white' : 'bg-[#0EA5A4] text-white') : 'bg-gray-100 text-gray-400'}`}>
+                                                <div key={i} className="flex flex-col items-center gap-2 md:gap-3 bg-white dark:bg-[#1E293B] px-1 sm:px-2">
+                                                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm shadow-md transition-transform hover:scale-110 ${i <= currentStageIndex ? (i === 4 ? 'bg-[#22C55E] text-white' : 'bg-[#0EA5A4] text-white') : 'bg-gray-100 text-gray-400'}`}>
                                                         {i + 1}
                                                     </div>
-                                                    <span className={`text-xs font-semibold ${i <= currentStageIndex ? 'text-[#0F172A] dark:text-white' : 'text-[#64748B]'}`}>{stage}</span>
+                                                    <span className={`text-[10px] md:text-xs font-semibold ${i <= currentStageIndex ? 'text-[#0F172A] dark:text-white' : 'text-[#64748B]'}`}>{stage}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -641,9 +668,9 @@ export default function DashboardPage() {
                                             {timeline.map((item, i) => (
                                                 <div key={i} className="relative flex items-start gap-4">
                                                     <div className="absolute left-0 w-5 h-5 bg-white dark:bg-[#1E293B] border-4 border-[#0EA5A4] rounded-full mt-1 z-10 shadow-sm"></div>
-                                                    <div className="pl-8">
-                                                        <h4 className="text-sm font-bold text-[#0F172A] dark:text-white">{item.title}</h4>
-                                                        <p className="text-xs text-[#64748B] mt-1">{item.desc}</p>
+                                                    <div className="pl-8 flex-1 min-w-0">
+                                                        <h4 className="text-sm font-bold text-[#0F172A] dark:text-white break-words">{item.title}</h4>
+                                                        <p className="text-xs text-[#64748B] mt-1 break-words">{item.desc}</p>
                                                         <time className="text-xs font-medium text-[#0EA5A4] mt-1 block">{item.date}</time>
                                                     </div>
                                                 </div>
@@ -694,19 +721,19 @@ export default function DashboardPage() {
                                     <div className="space-y-6">
                                         {papersToList.map((paper: Paper) => (
                                         <div key={paper._id} className="border border-[#E2E8F0] dark:border-white/10 bg-white dark:bg-[#1E293B] hover:shadow-md transition-all rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start gap-6 shadow-sm">
-                                            <div className="flex-1 min-w-0 overflow-hidden">
+                                            <div className="flex-1 min-w-0 overflow-hidden w-full">
                                                 {paper.status === 'published' && paper.slug ? (
                                                     <a href={`/paper/${paper.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-[#0EA5A4] transition-colors cursor-pointer block group">
-                                                        <h3 className="font-bold text-[#0F172A] group-hover:text-[#0EA5A4] dark:text-white text-base md:text-[17px] leading-snug break-words mb-2 transition-colors">{paper.title}</h3>
+                                                        <h3 className="font-bold text-[#0F172A] group-hover:text-[#0EA5A4] dark:text-white text-base md:text-[17px] leading-snug break-all mb-2 transition-colors">{paper.title}</h3>
                                                     </a>
                                                 ) : (
-                                                    <h3 className="font-bold text-[#0F172A] dark:text-white text-base md:text-[17px] leading-snug break-words mb-2">{paper.title}</h3>
+                                                    <h3 className="font-bold text-[#0F172A] dark:text-white text-base md:text-[17px] leading-snug break-all mb-2">{paper.title}</h3>
                                                 )}
                                                 
                                                 {paper.authors && paper.authors.length > 0 && (
                                                     <div className="flex items-center gap-1.5 text-sm text-[#475569] dark:text-[#94A3B8] mb-3">
-                                                        <UserIcon className="w-3.5 h-3.5" />
-                                                        <span className="truncate">{paper.authors.map(a => a.split(' | ')[0].trim()).join(', ')}</span>
+                                                        <UserIcon className="w-3.5 h-3.5 shrink-0" />
+                                                        <span className="truncate flex-1 min-w-0">{paper.authors.map(a => a.split(' | ')[0].trim()).join(', ')}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center gap-3 mb-4">
@@ -933,7 +960,7 @@ export default function DashboardPage() {
                                                         <Label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Phone Number</Label>
                                                         <Input {...register('phone')} placeholder="+1 (555) 000-0000" className="border-gray-200 dark:border-white/10 rounded-xl h-11 focus:ring-[#0EA5A4] bg-gray-50 dark:bg-white/5" />
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-3">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                         <div>
                                                             <Label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Gender</Label>
                                                             <select {...register('gender')} className="w-full border border-gray-200 dark:border-white/10 rounded-xl h-11 px-3 bg-gray-50 dark:bg-white/5 text-sm outline-none focus:ring-2 focus:ring-[#0EA5A4] dark:text-white">

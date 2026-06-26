@@ -12,34 +12,19 @@ export default function AntigravityBackground() {
     if (!ctx) return;
 
     let particles: Particle[] = [];
-    const particleCount = window.innerWidth < 768 ? 400 : 1000;
+    const particleCount = window.innerWidth < 768 ? 550 : 1350;
     
-    let mouse = { x: 0, y: 0 };
-    let targetMouse = { x: 0, y: 0 };
     let canvasRect = canvas.getBoundingClientRect();
 
     const resizeCanvas = () => {
       canvasRect = canvas.getBoundingClientRect();
-      canvas.width = canvasRect.width;
-      canvas.height = canvasRect.height;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvasRect.width * dpr;
+      canvas.height = canvasRect.height * dpr;
     };
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-
-    const handleMouseMove = (e: MouseEvent) => {
-      // Get mouse position relative to center of screen, normalized from -1 to 1
-      targetMouse.x = ((e.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-      targetMouse.y = ((e.clientY - canvasRect.top) / canvasRect.height) * 2 - 1;
-    };
-    
-    const handleMouseLeave = () => {
-      targetMouse.x = 0;
-      targetMouse.y = 0;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
 
     class Particle {
       baseX: number;
@@ -108,13 +93,13 @@ export default function AntigravityBackground() {
 
         // Calculate opacity based on Z-depth (back of shape is faint)
         const normalizedZ = (this.currentZ + 1) / 2; // 0 (back) to 1 (front)
-        const opacity = Math.max(0.05, normalizedZ * 0.8);
+        const opacity = Math.max(0.12, normalizedZ * 1.0); // Increased opacity by ~20%
 
         // Gradient color from orange/red to blue/purple based on original 3D position
         const mix = (this.baseX + 1) / 2;
-        const r = Math.floor(255 * (1 - mix) + 90 * mix);
-        const g = Math.floor(90 * (1 - mix) + 70 * mix);
-        const b = Math.floor(50 * (1 - mix) + 255 * mix);
+        const r = Math.floor(255 * (1 - mix) + 110 * mix);
+        const g = Math.floor(100 * (1 - mix) + 85 * mix);
+        const b = Math.floor(60 * (1 - mix) + 255 * mix);
 
         ctx.beginPath();
         ctx.moveTo(pScreenX, pScreenY);
@@ -125,7 +110,8 @@ export default function AntigravityBackground() {
         ctx.lineTo(screenX + dx * 2, screenY + dy * 2);
         
         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-        ctx.lineWidth = Math.max(1.0, 3.5 * scale);
+        const dpr = window.devicePixelRatio || 1;
+        ctx.lineWidth = Math.max(1.0 * dpr, 3.5 * scale * dpr);
         ctx.lineCap = 'round';
         ctx.stroke();
       }
@@ -147,13 +133,9 @@ export default function AntigravityBackground() {
       ctx.fillStyle = isDark ? '#0F172A' : '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Smoothly interpolate mouse position
-      mouse.x += (targetMouse.x - mouse.x) * 0.05;
-      mouse.y += (targetMouse.y - mouse.y) * 0.05;
-
       time += 1;
-      const rotY = time * 0.002 + (mouse.x * 0.5);
-      const rotX = time * 0.001 + (mouse.y * 0.5);
+      const rotY = time * 0.002;
+      const rotX = time * 0.001;
 
       // Cover the whole screen by setting radius to 65% of dimensions
       // This automatically distorts the shape into an enormous ellipsoid filling the page!
@@ -164,8 +146,11 @@ export default function AntigravityBackground() {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Sort particles by Z-depth so front particles render on top
-      particles.sort((a, b) => a.currentZ - b.currentZ);
+      // Sort particles by Z-depth so front particles render on top. 
+      // Optimization: Only sort every 5th frame since rotation is extremely slow.
+      if (time % 5 === 0) {
+        particles.sort((a, b) => a.currentZ - b.currentZ);
+      }
 
       for (let i = 0; i < particles.length; i++) {
         particles[i].update(time, rotX, rotY);
@@ -180,8 +165,6 @@ export default function AntigravityBackground() {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);

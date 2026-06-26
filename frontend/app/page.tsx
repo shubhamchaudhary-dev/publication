@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import AntigravityBackground from '@/components/AntigravityBackground';
 import FeaturedAuthors from '@/components/FeaturedAuthors';
 import FeaturedJournals from '@/components/FeaturedJournals';
-import { Eye, Download, Calendar } from 'lucide-react';
+import { Eye, Download, Calendar, FileText, Users, BookOpen } from 'lucide-react';
 
 interface Paper {
   _id: string;
@@ -87,8 +87,12 @@ export default function HomePage() {
             <div className="swarnspace-banner" style={{ justifyContent: 'center', textAlign: 'center' }}>
               <div className="swarnspace-banner-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div className="swarnspace-kicker" style={{ justifyContent: 'center', display: 'flex' }}><div className="swarnspace-kicker-dot"></div>SwapanSpace</div>
-                <h2 style={{ fontSize: '2.5rem', lineHeight: '1.2', margin: '1rem 0', color: '#19344f' }}>{cmsConfig.heroHeadline || 'Advancing Knowledge Through Open Research'}</h2>
-                <p style={{ maxWidth: '600px', margin: '0 auto 2rem' }}>{cmsConfig.heroSubheadline || 'Discover, share, and explore peer-reviewed academic papers across all disciplines on a single open platform.'}</p>
+                {/* Desktop Hero Text */}
+                <div className="hidden md:block">
+                  <h2 style={{ fontSize: '2.1rem', lineHeight: '1.2', margin: '1rem 0', color: '#19344f' }}>{cmsConfig.heroHeadline || 'Advancing Knowledge Through Open Research'}</h2>
+                  <p style={{ maxWidth: '600px', margin: '0 auto 2rem' }}>{cmsConfig.heroSubheadline || 'Discover, share, and explore peer-reviewed academic papers across all disciplines on a single open platform.'}</p>
+                </div>
+                {/* Mobile Hero Text Removed as requested */}
                 <div className="banner-btns" style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                   <button className="banner-btn-outline" onClick={() => router.push('/browse')}>Browse Papers →</button>
                   <button className="banner-btn-primary" onClick={() => router.push('/submit')}>Submit Research</button>
@@ -99,11 +103,41 @@ export default function HomePage() {
         </section>
 
         {/* STATS */}
-        <div className="stats-section">
-          <div className="stats-inner">
-            <div className="stat-item"><span className="stat-number">{stats.papers != null ? stats.papers.toLocaleString() : '52,400'}</span><span className="stat-label">Papers</span></div>
-            <div className="stat-item"><span className="stat-number">{stats.authors != null ? stats.authors.toLocaleString() : '18,730'}</span><span className="stat-label">Authors</span></div>
-            <div className="stat-item"><span className="stat-number">{stats.institutions != null ? stats.institutions.toLocaleString() : '340'}</span><span className="stat-label">Journals</span></div>
+        <div className="stats-section no-card-stats">
+          <div className="stats-container-flex">
+            {/* PAPERS */}
+            <div className="stat-item-new stat-purple">
+              <div className="stat-icon-badge">
+                <FileText size={18} />
+              </div>
+              <div className="stat-circle">
+                <span className="stat-number-text">{stats.papers != null ? stats.papers.toLocaleString() : '19'}</span>
+                <span className="stat-label-text">PAPERS</span>
+                <div className="stat-dash"></div>
+              </div>
+            </div>
+            {/* AUTHORS */}
+            <div className="stat-item-new stat-green">
+              <div className="stat-icon-badge">
+                <Users size={18} />
+              </div>
+              <div className="stat-circle">
+                <span className="stat-number-text">{stats.authors != null ? stats.authors.toLocaleString() : '5'}</span>
+                <span className="stat-label-text">AUTHORS</span>
+                <div className="stat-dash"></div>
+              </div>
+            </div>
+            {/* JOURNALS */}
+            <div className="stat-item-new stat-orange">
+              <div className="stat-icon-badge">
+                <BookOpen size={18} />
+              </div>
+              <div className="stat-circle">
+                <span className="stat-number-text">{stats.institutions != null ? stats.institutions.toLocaleString() : '150'}</span>
+                <span className="stat-label-text">JOURNALS</span>
+                <div className="stat-dash"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -140,7 +174,6 @@ export default function HomePage() {
                   <div className="acm-paper-center">
                     <div className="acm-paper-meta-top">
                       <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
-                      <span className="acm-paper-status">{paper.status === 'published' ? 'Published' : 'Under Review'}</span>
                     </div>
                     <div className="acm-paper-title">{paper.title}</div>
                     <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.map((a: string) => a.split(' | ')[0].trim()).filter(Boolean).join(', ') : 'Unknown'}</div>
@@ -154,7 +187,7 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="acm-paper-right">
-                    <div className="acm-paper-stats-list">
+                    <div className="acm-paper-stats-list hidden md:flex">
                       <div className="acm-stat-item">
                         <div className="acm-stat-icon view-icon"><Eye className="w-4 h-4"/></div>
                         <div className="acm-stat-info">
@@ -202,7 +235,6 @@ export default function HomePage() {
                   <div className="acm-paper-center">
                     <div className="acm-paper-meta-top">
                       <span className="acm-paper-type">{paper.subject?.name || 'Research'}</span>
-                      <span className="acm-paper-status">Published</span>
                     </div>
                     <div className="acm-paper-title">{paper.title}</div>
                     <div className="acm-paper-authors">{Array.isArray(paper.authors) ? paper.authors.map((a: string) => a.split(' | ')[0].trim()).filter(Boolean).join(', ') : 'Unknown'}</div>
@@ -216,7 +248,7 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="acm-paper-right">
-                    <div className="acm-paper-stats-list">
+                    <div className="acm-paper-stats-list hidden md:flex">
                       <div className="acm-stat-item">
                         <div className="acm-stat-icon view-icon"><Eye className="w-4 h-4"/></div>
                         <div className="acm-stat-info">
